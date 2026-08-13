@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   ShoppingBag,
   ShoppingCart,
+  Sparkles,
   Truck,
 } from "lucide-react";
 
@@ -31,6 +32,11 @@ import { useCart } from "@/context/CartContext";
 /* ========================================
    TYPES
 ======================================== */
+
+interface ProductVariant {
+  color?: string;
+  sizes?: string[];
+}
 
 interface Product {
   _id: string;
@@ -47,6 +53,8 @@ interface Product {
 
   image?: string;
   images?: string[];
+
+  variants?: ProductVariant[];
 
   description?: string;
   status?: string;
@@ -89,6 +97,12 @@ export default function ProductDetailsPage() {
     useState("");
 
   const [
+    selectedSize,
+    setSelectedSize,
+  ] =
+    useState("");
+
+  const [
     quantity,
     setQuantity,
   ] =
@@ -111,6 +125,24 @@ export default function ProductDetailsPage() {
     setMessage,
   ] =
     useState("");
+
+  const [
+    showFullDescription,
+    setShowFullDescription,
+  ] =
+    useState(false);
+
+  const [
+    similarProducts,
+    setSimilarProducts,
+  ] =
+    useState<Product[]>([]);
+
+  const [
+    loadingSimilar,
+    setLoadingSimilar,
+  ] =
+    useState(false);
 
   /* ========================================
      LOAD PRODUCT
@@ -172,6 +204,7 @@ export default function ProductDetailsPage() {
             images[0]
           );
 
+          setSelectedSize("");
           setQuantity(1);
         } catch (
           error
@@ -200,6 +233,92 @@ export default function ProductDetailsPage() {
   }, [productId]);
 
   /* ========================================
+     LOAD SIMILAR PRODUCTS
+  ======================================== */
+
+  useEffect(() => {
+    const loadSimilarProducts =
+      async () => {
+        if (
+          !product?._id ||
+          !product.category
+        ) {
+          setSimilarProducts([]);
+          return;
+        }
+
+        try {
+          setLoadingSimilar(true);
+
+          const response =
+            await fetch(
+              "/api/products",
+              {
+                cache:
+                  "no-store",
+              }
+            );
+
+          if (!response.ok) {
+            throw new Error(
+              "Similar products could not be loaded"
+            );
+          }
+
+          const data =
+            (await response.json()) as
+              | Product[]
+              | {
+                  error?: string;
+                };
+
+          if (!Array.isArray(data)) {
+            setSimilarProducts([]);
+            return;
+          }
+
+          const currentCategory =
+            product.category
+              .trim()
+              .toLowerCase();
+
+          const relatedProducts =
+            data
+              .filter(
+                (item) =>
+                  item._id !==
+                    product._id &&
+                  item.category
+                    ?.trim()
+                    .toLowerCase() ===
+                    currentCategory &&
+                  item.status !==
+                    "Inactive"
+              )
+              .slice(0, 6);
+
+          setSimilarProducts(
+            relatedProducts
+          );
+        } catch (error) {
+          console.error(
+            "Similar products load error:",
+            error
+          );
+
+          setSimilarProducts([]);
+        } finally {
+          setLoadingSimilar(false);
+        }
+      };
+
+    void loadSimilarProducts();
+  }, [
+    product?._id,
+    product?.category,
+  ]);
+
+  /* ========================================
      PRODUCT IMAGES
   ======================================== */
 
@@ -211,6 +330,47 @@ export default function ProductDetailsPage() {
           )
         : [];
     }, [product]);
+
+  /* ========================================
+     AVAILABLE SIZES
+  ======================================== */
+
+  const availableSizes =
+    useMemo(() => {
+      if (
+        !product ||
+        !Array.isArray(
+          product.variants
+        )
+      ) {
+        return [];
+      }
+
+      const sizes =
+        product.variants.flatMap(
+          (variant) =>
+            Array.isArray(
+              variant.sizes
+            )
+              ? variant.sizes
+              : []
+        );
+
+      return Array.from(
+        new Set(
+          sizes
+            .map((size) =>
+              String(
+                size
+              ).trim()
+            )
+            .filter(Boolean)
+        )
+      );
+    }, [product]);
+
+  const sizeRequired =
+    availableSizes.length > 0;
 
   /* ========================================
      PRICE
@@ -311,6 +471,17 @@ export default function ProductDetailsPage() {
         return;
       }
 
+      if (
+        sizeRequired &&
+        !selectedSize
+      ) {
+        setMessage(
+          "Please select a size before continuing."
+        );
+
+        return;
+      }
+
       try {
         setAddingToCart(
           true
@@ -321,25 +492,19 @@ export default function ProductDetailsPage() {
         const cartProduct = {
           id: product._id,
 
-          _id: product._id,
-
           name:
             product.name,
 
           price:
             displayPrice,
 
-          sellingPrice:
-            displayPrice,
-
           image:
             selectedImage ||
             productImages[0],
 
-          quantity: 1,
-
-          stock:
-            product.stock,
+          size:
+            selectedSize ||
+            undefined,
         };
 
         for (
@@ -349,7 +514,7 @@ export default function ProductDetailsPage() {
           count += 1
         ) {
           addToCart(
-            cartProduct as never
+            cartProduct
           );
         }
 
@@ -368,7 +533,11 @@ export default function ProductDetailsPage() {
             quantity > 1
               ? "s"
               : ""
-          } added to cart successfully.`
+          } added to cart successfully.${
+            selectedSize
+              ? ` Size: ${selectedSize}`
+              : ""
+          }`
         );
       } catch (
         error
@@ -397,7 +566,7 @@ export default function ProductDetailsPage() {
       <main className="min-h-screen bg-gray-50">
         <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <div className="grid animate-pulse gap-10 rounded-3xl bg-white p-6 shadow-sm lg:grid-cols-2 lg:p-10">
-            <div className="aspect-square rounded-2xl bg-gray-200" />
+            <div className="aspect-[2/3] rounded-2xl bg-gray-200" />
 
             <div className="space-y-5">
               <div className="h-5 w-32 rounded bg-gray-200" />
@@ -530,7 +699,7 @@ export default function ProductDetailsPage() {
                   "success"
                 )
                 ? "border-green-200 bg-green-50 text-green-700"
-                : "border-red-200 bg-red-50 text-red-700"
+                : "border-orange-200 bg-orange-50 text-orange-700"
             }`}
           >
             {message}
@@ -597,7 +766,7 @@ export default function ProductDetailsPage() {
 
               {/* MAIN IMAGE */}
 
-              <div className="group relative aspect-square min-w-0 flex-1 overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
+              <div className="group relative aspect-[2/3] w-full max-w-[430px] overflow-hidden rounded-2xl border border-gray-200 bg-gray-50">
                 <Image
                   src={
                     selectedImage ||
@@ -609,7 +778,8 @@ export default function ProductDetailsPage() {
                   fill
                   priority
                   unoptimized
-                  className="object-contain p-4 transition duration-500 group-hover:scale-110"
+                  sizes="(max-width: 768px) 100vw, 430px"
+                  className="object-contain transition duration-500 group-hover:scale-105"
                 />
 
                 {discountPercentage >
@@ -628,6 +798,114 @@ export default function ProductDetailsPage() {
               Hover over the
               image to zoom
             </p>
+
+            {/* COMPACT SIMILAR PRODUCTS */}
+
+            {(loadingSimilar ||
+              similarProducts.length > 0) && (
+              <div className="mt-5 rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-pink-600">
+                      Similar Products
+                    </p>
+
+                    <h2 className="mt-0.5 text-base font-bold text-gray-900">
+                      More Like This
+                    </h2>
+                  </div>
+
+                  <Sparkles
+                    size={18}
+                    className="shrink-0 text-pink-600"
+                  />
+                </div>
+
+                <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+                  {loadingSimilar ? (
+                    Array.from({
+                      length: 3,
+                    }).map(
+                      (
+                        _item,
+                        index
+                      ) => (
+                        <div
+                          key={index}
+                          className="w-[105px] shrink-0 animate-pulse"
+                        >
+                          <div className="aspect-[2/3] rounded-xl bg-gray-200" />
+                          <div className="mt-2 h-3 rounded bg-gray-200" />
+                          <div className="mt-1.5 h-3 w-1/2 rounded bg-gray-200" />
+                        </div>
+                      )
+                    )
+                  ) : (
+                    similarProducts.map(
+                      (item) => {
+                        const itemImage =
+                          getProductImages(
+                            item
+                          )[0];
+
+                        const itemSizes =
+                          getAvailableSizes(
+                            item
+                          );
+
+                        return (
+                          <Link
+                            key={item._id}
+                            href={`/products/${item._id}`}
+                            className="group w-[105px] shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-pink-300 hover:shadow-sm"
+                          >
+                            <div className="relative aspect-[2/3] overflow-hidden bg-gray-50">
+                              <Image
+                                src={
+                                  itemImage
+                                }
+                                alt={
+                                  item.name
+                                }
+                                fill
+                                unoptimized
+                                sizes="105px"
+                                className="object-cover transition duration-300 group-hover:scale-105"
+                              />
+                            </div>
+
+                            <div className="p-2">
+                              <h3 className="line-clamp-2 text-[11px] font-bold leading-4 text-gray-900">
+                                {item.name}
+                              </h3>
+
+                              <p className="mt-1 text-xs font-extrabold text-gray-900">
+                                ₹
+                                {Number(
+                                  item.sellingPrice ||
+                                    0
+                                ).toLocaleString(
+                                  "en-IN"
+                                )}
+                              </p>
+
+                              {itemSizes.length >
+                                0 && (
+                                <p className="mt-1 truncate text-[10px] text-gray-500">
+                                  {itemSizes.join(
+                                    ", "
+                                  )}
+                                </p>
+                              )}
+                            </div>
+                          </Link>
+                        );
+                      }
+                    )
+                  )}
+                </div>
+              </div>
+            )}
           </section>
 
           {/* PRODUCT INFORMATION */}
@@ -637,7 +915,7 @@ export default function ProductDetailsPage() {
             {/* BRAND */}
 
             {product.brand && (
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-pink-600">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-pink-600">
                 {
                   product.brand
                 }
@@ -646,7 +924,7 @@ export default function ProductDetailsPage() {
 
             {/* NAME */}
 
-            <h1 className="mt-2 text-3xl font-bold leading-tight text-gray-900 md:text-4xl">
+            <h1 className="mt-2 text-2xl font-bold leading-tight text-gray-900 md:text-3xl">
               {product.name}
             </h1>
 
@@ -665,9 +943,9 @@ export default function ProductDetailsPage() {
 
             {/* PRICE */}
 
-            <div className="my-6 border-y border-gray-100 py-6">
+            <div className="my-5 border-y border-gray-100 py-5">
               <div className="flex flex-wrap items-end gap-3">
-                <span className="text-4xl font-extrabold text-gray-900">
+                <span className="text-3xl font-extrabold text-gray-900">
                   ₹
                   {displayPrice.toLocaleString(
                     "en-IN"
@@ -676,7 +954,7 @@ export default function ProductDetailsPage() {
 
                 {originalPrice >
                   displayPrice && (
-                  <span className="pb-1 text-lg text-gray-400 line-through">
+                  <span className="pb-1 text-base text-gray-400 line-through">
                     ₹
                     {originalPrice.toLocaleString(
                       "en-IN"
@@ -686,7 +964,7 @@ export default function ProductDetailsPage() {
 
                 {discountPercentage >
                   0 && (
-                  <span className="pb-1 font-bold text-green-600">
+                  <span className="pb-1 text-sm font-bold text-green-600">
                     Save{" "}
                     {
                       discountPercentage
@@ -696,7 +974,7 @@ export default function ProductDetailsPage() {
                 )}
               </div>
 
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-xs text-gray-500">
                 Inclusive of all
                 taxes
               </p>
@@ -733,11 +1011,65 @@ export default function ProductDetailsPage() {
                 : "In Stock"}
             </div>
 
+            {/* SIZE */}
+
+            {availableSizes.length > 0 && (
+              <div className="mt-5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-gray-800">
+                    Select Size
+                  </p>
+
+                  {selectedSize && (
+                    <span className="text-sm font-semibold text-pink-600">
+                      Selected: {selectedSize}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  {availableSizes.map(
+                    (size) => {
+                      const selected =
+                        selectedSize ===
+                        size;
+
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => {
+                            setSelectedSize(
+                              size
+                            );
+
+                            if (
+                              message ===
+                              "Please select a size before continuing."
+                            ) {
+                              setMessage("");
+                            }
+                          }}
+                          className={`min-w-12 rounded-lg border-2 px-3 py-2 text-sm font-bold transition ${
+                            selected
+                              ? "border-pink-600 bg-pink-600 text-white"
+                              : "border-gray-300 bg-white text-gray-800 hover:border-pink-400 hover:text-pink-600"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      );
+                    }
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* QUANTITY */}
 
             {!isOutOfStock && (
               <div className="mt-7">
-                <p className="mb-3 font-semibold text-gray-800">
+                <p className="mb-2 text-sm font-semibold text-gray-800">
                   Quantity
                 </p>
 
@@ -752,7 +1084,7 @@ export default function ProductDetailsPage() {
                       quantity <=
                       1
                     }
-                    className="flex h-12 w-12 items-center justify-center text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-10 w-10 items-center justify-center text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
                     aria-label="Decrease quantity"
                   >
                     <Minus
@@ -762,7 +1094,7 @@ export default function ProductDetailsPage() {
                     />
                   </button>
 
-                  <span className="flex h-12 min-w-14 items-center justify-center border-x border-gray-300 px-4 font-bold text-gray-900">
+                  <span className="flex h-10 min-w-12 items-center justify-center border-x border-gray-300 px-3 text-sm font-bold text-gray-900">
                     {
                       quantity
                     }
@@ -814,7 +1146,7 @@ export default function ProductDetailsPage() {
                   isOutOfStock ||
                   addingToCart
                 }
-                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 border-pink-600 px-5 font-bold text-pink-600 transition hover:bg-pink-50 disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-pink-600 px-4 text-sm font-bold text-pink-600 transition hover:bg-pink-50 disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400"
               >
                 <ShoppingCart
                   size={21}
@@ -836,7 +1168,7 @@ export default function ProductDetailsPage() {
                   isOutOfStock ||
                   addingToCart
                 }
-                className="inline-flex min-h-14 items-center justify-center gap-2 rounded-xl bg-pink-600 px-5 font-bold text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-pink-600 px-4 text-sm font-bold text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
               >
                 <ShoppingBag
                   size={21}
@@ -848,7 +1180,7 @@ export default function ProductDetailsPage() {
 
             {/* FEATURES */}
 
-            <div className="mt-8 grid gap-3">
+            <div className="mt-6 grid gap-3">
               <FeatureRow
                 icon={
                   <Truck
@@ -898,10 +1230,40 @@ export default function ProductDetailsPage() {
 
           <div className="mt-5 h-1 w-16 rounded-full bg-pink-600" />
 
-          <p className="mt-6 whitespace-pre-line leading-8 text-gray-600">
-            {product.description?.trim() ||
-              "Product description will be added soon."}
-          </p>
+          <div
+            className={`relative mt-6 overflow-hidden transition-all duration-300 ${
+              showFullDescription
+                ? "max-h-none"
+                : "max-h-56"
+            }`}
+          >
+            <p className="whitespace-pre-line leading-8 text-gray-600">
+              {product.description?.trim() ||
+                "Product description will be added soon."}
+            </p>
+
+            {!showFullDescription &&
+              product.description?.trim() && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white to-transparent" />
+              )}
+          </div>
+
+          {product.description?.trim() &&
+            product.description.trim().length > 180 && (
+              <button
+                type="button"
+                onClick={() =>
+                  setShowFullDescription(
+                    (previous) => !previous
+                  )
+                }
+                className="mt-4 inline-flex items-center rounded-lg border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-bold text-pink-600 transition hover:bg-pink-100 hover:text-pink-700"
+              >
+                {showFullDescription
+                  ? "See Less"
+                  : "See More"}
+              </button>
+            )}
         </section>
 
         {/* PRODUCT HIGHLIGHTS */}
@@ -940,19 +1302,20 @@ export default function ProductDetailsPage() {
             />
 
             <Highlight
-              label="Images"
-              value={`${
-                productImages.length
-              } Product Image${
-                productImages.length >
-                1
-                  ? "s"
-                  : ""
-              }`}
+              label="Sizes"
+              value={
+                availableSizes.length >
+                0
+                  ? availableSizes.join(
+                      ", "
+                    )
+                  : "Not Required"
+              }
             />
           </div>
         </section>
       </div>
+
     </main>
   );
 }
@@ -1004,6 +1367,42 @@ function getProductImages(
 }
 
 /* ========================================
+   GET AVAILABLE SIZES
+======================================== */
+
+function getAvailableSizes(
+  product: Product
+): string[] {
+  if (
+    !Array.isArray(
+      product.variants
+    )
+  ) {
+    return [];
+  }
+
+  const sizes =
+    product.variants.flatMap(
+      (variant) =>
+        Array.isArray(
+          variant.sizes
+        )
+          ? variant.sizes
+          : []
+    );
+
+  return Array.from(
+    new Set(
+      sizes
+        .map((size) =>
+          String(size).trim()
+        )
+        .filter(Boolean)
+    )
+  );
+}
+
+/* ========================================
    FEATURE ROW
 ======================================== */
 
@@ -1017,17 +1416,17 @@ function FeatureRow({
   description: string;
 }) {
   return (
-    <div className="flex items-start gap-4 rounded-xl border border-gray-200 p-4">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pink-50 text-pink-600">
+    <div className="flex items-start gap-3 rounded-xl border border-gray-200 p-3.5">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink-50 text-pink-600">
         {icon}
       </div>
 
       <div>
-        <h3 className="font-bold text-gray-900">
+        <h3 className="text-sm font-bold text-gray-900">
           {title}
         </h3>
 
-        <p className="mt-1 text-sm leading-6 text-gray-500">
+        <p className="mt-1 text-xs leading-5 text-gray-500">
           {description}
         </p>
       </div>

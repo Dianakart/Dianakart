@@ -15,6 +15,7 @@ export interface IOrderItem {
   image: string;
   price: number;
   quantity: number;
+  size?: string;
 }
 
 export interface IOrder
@@ -76,6 +77,12 @@ const orderItemSchema =
         type: Number,
         required: true,
         min: 1,
+      },
+
+      size: {
+        type: String,
+        default: "",
+        trim: true,
       },
     },
     {

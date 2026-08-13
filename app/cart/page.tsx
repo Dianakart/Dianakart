@@ -9,6 +9,7 @@ import {
   ShoppingBag,
   Trash2,
 } from "lucide-react";
+
 import { useCart } from "@/context/CartContext";
 
 export default function CartPage() {
@@ -25,7 +26,8 @@ export default function CartPage() {
   );
 
   const subtotal = cart.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) =>
+      total + item.price * item.quantity,
     0
   );
 
@@ -83,7 +85,7 @@ export default function CartPage() {
             <section className="space-y-4">
               {cart.map((item) => (
                 <article
-                  key={item.id}
+                  key={`${item.id}-${item.size || "no-size"}`}
                   className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:p-5"
                 >
                   <div className="flex gap-4 sm:gap-6">
@@ -107,7 +109,15 @@ export default function CartPage() {
                         </h2>
                       </Link>
 
-                      <p className="mt-2 text-lg font-bold text-gray-900">
+                      {item.size && (
+                        <div className="mt-2">
+                          <span className="inline-flex rounded-lg bg-pink-50 px-3 py-1.5 text-sm font-bold text-pink-600">
+                            Size: {item.size}
+                          </span>
+                        </div>
+                      )}
+
+                      <p className="mt-3 text-lg font-bold text-gray-900">
                         ₹{Number(item.price).toLocaleString("en-IN")}
                       </p>
 
@@ -115,7 +125,12 @@ export default function CartPage() {
                         <div className="flex items-center rounded-xl border border-gray-200 bg-gray-50">
                           <button
                             type="button"
-                            onClick={() => decreaseQty(item.id)}
+                            onClick={() =>
+                              decreaseQty(
+                                item.id,
+                                item.size
+                              )
+                            }
                             disabled={item.quantity <= 1}
                             aria-label={`Decrease quantity of ${item.name}`}
                             className="flex h-10 w-10 items-center justify-center rounded-l-xl text-gray-700 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-40"
@@ -129,7 +144,12 @@ export default function CartPage() {
 
                           <button
                             type="button"
-                            onClick={() => increaseQty(item.id)}
+                            onClick={() =>
+                              increaseQty(
+                                item.id,
+                                item.size
+                              )
+                            }
                             aria-label={`Increase quantity of ${item.name}`}
                             className="flex h-10 w-10 items-center justify-center rounded-r-xl text-gray-700 transition hover:bg-gray-200"
                           >
@@ -139,7 +159,12 @@ export default function CartPage() {
 
                         <button
                           type="button"
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() =>
+                            removeFromCart(
+                              item.id,
+                              item.size
+                            )
+                          }
                           className="flex items-center gap-2 text-sm font-semibold text-red-600 transition hover:text-red-700"
                         >
                           <Trash2 size={17} />
@@ -168,6 +193,7 @@ export default function CartPage() {
               <div className="mt-6 space-y-4 text-sm">
                 <div className="flex items-center justify-between text-gray-600">
                   <span>Total Items</span>
+
                   <span className="font-semibold text-gray-900">
                     {totalQuantity}
                   </span>
@@ -175,6 +201,7 @@ export default function CartPage() {
 
                 <div className="flex items-center justify-between text-gray-600">
                   <span>Subtotal</span>
+
                   <span className="font-semibold text-gray-900">
                     ₹{subtotal.toLocaleString("en-IN")}
                   </span>
@@ -182,6 +209,7 @@ export default function CartPage() {
 
                 <div className="flex items-center justify-between text-gray-600">
                   <span>Shipping</span>
+
                   <span className="font-semibold text-green-600">
                     Free
                   </span>
@@ -192,7 +220,10 @@ export default function CartPage() {
 
               <div className="flex items-end justify-between">
                 <div>
-                  <p className="text-sm text-gray-500">Total Amount</p>
+                  <p className="text-sm text-gray-500">
+                    Total Amount
+                  </p>
+
                   <p className="mt-1 text-xs text-gray-400">
                     Inclusive of all charges
                   </p>

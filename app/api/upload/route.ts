@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 import crypto from "crypto";
 
 export const runtime = "nodejs";
@@ -70,29 +69,20 @@ export async function POST(request: Request) {
       );
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
     const fileName = `${Date.now()}-${crypto.randomUUID()}.${extension}`;
 
-    const uploadFolder = path.join(
-      process.cwd(),
-      "public",
-      "uploads",
-      folder
+    const blob = await put(
+      `${folder}/${fileName}`,
+      file,
+      {
+        access: "public",
+        addRandomSuffix: false,
+      }
     );
-
-    await mkdir(uploadFolder, {
-      recursive: true,
-    });
-
-    const filePath = path.join(uploadFolder, fileName);
-
-    await writeFile(filePath, buffer);
 
     return NextResponse.json({
       success: true,
-      url: `/uploads/${folder}/${fileName}`,
+      url: blob.url,
     });
   } catch (error) {
     console.error("Upload Error:", error);

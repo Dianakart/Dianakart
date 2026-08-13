@@ -48,6 +48,30 @@ const initialProduct: ProductForm = {
 
 const MAX_PRODUCT_IMAGES = 5;
 
+const CLOTHING_SIZES = [
+  "XS",
+  "S",
+  "M",
+  "L",
+  "XL",
+  "XXL",
+  "3XL",
+  "4XL",
+] as const;
+
+const WAIST_SIZES = [
+  "26",
+  "28",
+  "30",
+  "32",
+  "34",
+  "36",
+  "38",
+  "40",
+  "42",
+  "44",
+] as const;
+
 export default function AddProductPage() {
   const [product, setProduct] =
     useState<ProductForm>(initialProduct);
@@ -63,6 +87,8 @@ export default function AddProductPage() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
 
   const imageInputRef =
     useRef<HTMLInputElement | null>(null);
@@ -141,10 +167,27 @@ export default function AddProductPage() {
       return;
     }
 
-    const nextImageUrl = URL.createObjectURL(nextFile);
+    const reader = new FileReader();
 
-    setOriginalImageUrl(nextImageUrl);
-    setCropperOpen(true);
+    reader.onload = () => {
+      const result = reader.result;
+
+      if (typeof result !== "string") {
+        setMessage("❌ Unable to load selected image");
+        setCropperOpen(false);
+        return;
+      }
+
+      setOriginalImageUrl(result);
+      setCropperOpen(true);
+    };
+
+    reader.onerror = () => {
+      setMessage("❌ Unable to read selected image");
+      setCropperOpen(false);
+    };
+
+    reader.readAsDataURL(nextFile);
   };
 
   // Select one or more images and crop them one by one
@@ -319,6 +362,14 @@ export default function AddProductPage() {
     });
   };
 
+  const toggleSize = (size: string) => {
+    setSelectedSizes((currentSizes) =>
+      currentSizes.includes(size)
+        ? currentSizes.filter((currentSize) => currentSize !== size)
+        : [...currentSizes, size]
+    );
+  };
+
   const uploadProductImages = async (): Promise<string[]> => {
     if (galleryFiles.length === 0) {
       throw new Error("Please select at least one product image");
@@ -395,7 +446,15 @@ export default function AddProductPage() {
           ...product,
           image: uploadedImageUrls[0],
           images: uploadedImageUrls,
-          variants: [],
+          variants:
+            selectedSizes.length > 0
+              ? [
+                  {
+                    color: "",
+                    sizes: selectedSizes,
+                  },
+                ]
+              : [],
           costPrice: Number(product.costPrice),
           sellingPrice: Number(product.sellingPrice),
           stock: Number(product.stock),
@@ -421,6 +480,7 @@ export default function AddProductPage() {
       setProduct(initialProduct);
       setGalleryFiles([]);
       setGalleryImages([]);
+      setSelectedSizes([]);
       pendingFilesRef.current = [];
       setOriginalImageUrl("");
       setCropperOpen(false);
@@ -754,6 +814,88 @@ export default function AddProductPage() {
               </div>
             </div>
 
+            {/* Available Sizes */}
+            <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-900">
+                  Available Sizes
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Select all sizes available for this product. You can use standard clothing sizes,
+                  waist sizes, or both.
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <p className="mb-3 font-semibold text-gray-800">
+                    Clothing Sizes
+                  </p>
+
+                  <div className="flex flex-wrap gap-3">
+                    {CLOTHING_SIZES.map((size) => {
+                      const selected = selectedSizes.includes(size);
+
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => toggleSize(size)}
+                          className={`min-w-14 rounded-lg border px-4 py-2.5 text-sm font-bold transition ${
+                            selected
+                              ? "border-pink-600 bg-pink-600 text-white"
+                              : "border-gray-300 bg-white text-gray-700 hover:border-pink-300 hover:text-pink-600"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-3 font-semibold text-gray-800">
+                    Jeans / Bottom Waist Sizes
+                  </p>
+
+                  <div className="flex flex-wrap gap-3">
+                    {WAIST_SIZES.map((size) => {
+                      const selected = selectedSizes.includes(size);
+
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => toggleSize(size)}
+                          className={`min-w-14 rounded-lg border px-4 py-2.5 text-sm font-bold transition ${
+                            selected
+                              ? "border-pink-600 bg-pink-600 text-white"
+                              : "border-gray-300 bg-white text-gray-700 hover:border-pink-300 hover:text-pink-600"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-gray-50 p-4">
+                  <p className="text-sm font-medium text-gray-600">
+                    Selected Sizes
+                  </p>
+
+                  <p className="mt-2 font-bold text-gray-900">
+                    {selectedSizes.length > 0
+                      ? selectedSizes.join(", ")
+                      : "No size selected"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Product Images */}
             <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
               <div className="mb-6">
@@ -901,6 +1043,7 @@ export default function AddProductPage() {
                   setProduct(initialProduct);
                   setGalleryFiles([]);
                   setGalleryImages([]);
+                  setSelectedSizes([]);
                   pendingFilesRef.current = [];
                   setOriginalImageUrl("");
                   setCropperOpen(false);

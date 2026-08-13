@@ -747,6 +747,9 @@ export default function CheckoutPage() {
 
                 quantity:
                   item.quantity,
+
+                size:
+                  item.size || "",
               })
             ),
           }),
@@ -1161,7 +1164,7 @@ export default function CheckoutPage() {
                           onChange={
                             handleChange
                           }
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
                         >
                           <option value="Home">
                             Home
@@ -1191,7 +1194,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="Full name"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
                         />
                       </div>
 
@@ -1212,7 +1215,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="10-digit mobile number"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
                         />
                       </div>
 
@@ -1231,7 +1234,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="Email"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
                         />
                       </div>
 
@@ -1268,7 +1271,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="City"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
                         />
                       </div>
 
@@ -1286,7 +1289,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="State"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
                         />
                       </div>
 
@@ -1306,7 +1309,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="6-digit PIN code"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
                         />
                       </div>
                     </div>
@@ -1410,9 +1413,7 @@ export default function CheckoutPage() {
                 {cart.map(
                   (item) => (
                     <div
-                      key={
-                        item.id
-                      }
+                      key={`${item.id}-${item.size || "no-size"}`}
                       className="flex items-start justify-between gap-4 border-b border-gray-100 pb-4"
                     >
                       <div className="min-w-0">
@@ -1422,7 +1423,15 @@ export default function CheckoutPage() {
                           }
                         </p>
 
-                        <p className="mt-1 text-xs text-gray-500">
+                        {item.size && (
+                          <div className="mt-2">
+                            <span className="inline-flex rounded-lg bg-pink-50 px-2.5 py-1 text-xs font-bold text-pink-600">
+                              Size: {item.size}
+                            </span>
+                          </div>
+                        )}
+
+                        <p className="mt-2 text-xs text-gray-500">
                           Quantity:{" "}
                           {
                             item.quantity

@@ -26,6 +26,7 @@ type OrderItem = {
   image: string;
   price: number;
   quantity: number;
+  size?: string;
 };
 
 type Order = {
@@ -406,7 +407,15 @@ export default function MyOrdersPage() {
                                 }
                               </p>
 
-                              <p className="mt-1 text-sm text-gray-500">
+                              {item.size && (
+                                <div className="mt-2">
+                                  <span className="inline-flex rounded-lg bg-pink-50 px-3 py-1 text-xs font-bold text-pink-600">
+                                    Size: {item.size}
+                                  </span>
+                                </div>
+                              )}
+
+                              <p className="mt-2 text-sm text-gray-500">
                                 Quantity:{" "}
                                 {
                                   item.quantity

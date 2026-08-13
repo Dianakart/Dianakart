@@ -85,6 +85,7 @@ interface RawOrderItem {
   image?: unknown;
   price?: unknown;
   quantity?: unknown;
+  size?: unknown;
 }
 
 /* ========================================
@@ -321,6 +322,12 @@ export async function POST(
               Number(
                 item.quantity
               ),
+
+            size:
+              typeof item.size ===
+              "string"
+                ? item.size.trim()
+                : "",
           })
         )
         .filter(
