@@ -36,8 +36,6 @@ type Product = {
   oldPrice?: number;
   mrp?: number;
 
-  stock?: number;
-
   image?: string;
   images?: string[];
 
@@ -642,12 +640,6 @@ function ProductCard({
         )
       : 0;
 
-  const isOutOfStock =
-    Number(
-      product.stock ||
-        0
-    ) <= 0;
-
   return (
     <article className="group">
       <Link
@@ -677,14 +669,6 @@ function ProductCard({
             </span>
           )}
 
-          {isOutOfStock && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-              <span className="rounded-full bg-white px-4 py-2 text-sm font-bold text-red-600">
-                Out of
-                Stock
-              </span>
-            </div>
-          )}
         </div>
 
         <div className="pt-3">
