@@ -430,11 +430,11 @@ export default function AdminOrdersPage() {
     );
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <main className="h-[calc(100vh-1rem)] overflow-hidden bg-gray-50 px-4 py-5 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-full max-w-7xl flex-col">
         {/* HEADER */}
 
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="shrink-0 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900">
               <ShoppingCart className="h-8 w-8 text-pink-600" />
@@ -442,10 +442,8 @@ export default function AdminOrdersPage() {
               Orders
             </h1>
 
-            <p className="mt-2 text-sm text-gray-500">
-              View and manage
-              DianaKart customer
-              orders.
+            <p className="mt-1 text-sm text-gray-500">
+              View and manage DianaKart customer orders.
             </p>
           </div>
 
@@ -477,7 +475,7 @@ export default function AdminOrdersPage() {
 
         {/* SUMMARY */}
 
-        <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <section className="mt-5 grid shrink-0 gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <SummaryCard
             label="Total Orders"
             value={String(
@@ -518,12 +516,12 @@ export default function AdminOrdersPage() {
           />
         </section>
 
-        {/* ORDERS */}
+        {/* ORDERS SECTION */}
 
-        <section className="mt-6 rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <section className="mt-5 flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
           {/* SEARCH + FILTER */}
 
-          <div className="flex flex-col gap-4 border-b border-gray-100 p-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="shrink-0 flex flex-col gap-4 border-b border-gray-100 bg-white p-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="relative w-full lg:max-w-md">
               <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
 
@@ -582,55 +580,61 @@ export default function AdminOrdersPage() {
           {/* CONTENT */}
 
           {loading ? (
-            <div className="flex min-h-72 items-center justify-center">
+            <div className="flex min-h-0 flex-1 items-center justify-center">
               <div className="text-center">
                 <RefreshCw className="mx-auto h-8 w-8 animate-spin text-pink-600" />
 
                 <p className="mt-3 text-sm font-medium text-gray-500">
-                  Loading
-                  orders...
+                  Loading orders...
                 </p>
               </div>
             </div>
           ) : error ? (
-            <div className="px-6 py-16 text-center">
-              <p className="font-semibold text-red-600">
-                {error}
-              </p>
+            <div className="flex min-h-0 flex-1 items-center justify-center px-6 py-10 text-center">
+              <div>
+                <p className="font-semibold text-red-600">
+                  {error}
+                </p>
 
-              <button
-                type="button"
-                onClick={() =>
-                  void fetchOrders()
-                }
-                className="mt-5 rounded-xl bg-pink-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-pink-700"
-              >
-                Try Again
-              </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    void fetchOrders()
+                  }
+                  className="mt-5 rounded-xl bg-pink-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-pink-700"
+                >
+                  Try Again
+                </button>
+              </div>
             </div>
           ) : filteredOrders.length ===
             0 ? (
-            <div className="px-6 py-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-pink-50">
-                <Package className="h-8 w-8 text-pink-600" />
+            <div className="flex min-h-0 flex-1 items-center justify-center px-6 py-10 text-center">
+              <div>
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-pink-50">
+                  <Package className="h-8 w-8 text-pink-600" />
+                </div>
+
+                <h2 className="mt-5 text-xl font-bold text-gray-900">
+                  No orders found
+                </h2>
+
+                <p className="mt-2 text-sm text-gray-500">
+                  No orders match the selected filter.
+                </p>
               </div>
-
-              <h2 className="mt-5 text-xl font-bold text-gray-900">
-                No orders
-                found
-              </h2>
-
-              <p className="mt-2 text-sm text-gray-500">
-                No orders
-                match the
-                selected
-                filter.
-              </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-100">
-                <thead className="bg-gray-50">
+            /*
+              IMPORTANT:
+              This area gets its own vertical
+              and horizontal scroll.
+            */
+            <div className="min-h-0 flex-1 overflow-auto">
+              <table className="min-w-[1180px] w-full border-separate border-spacing-0">
+                {/* STICKY TABLE HEADER */}
+
+                <thead className="sticky top-0 z-20 bg-gray-50 shadow-[0_1px_0_0_#f3f4f6]">
                   <tr>
                     <TableHeading>
                       Order
@@ -656,13 +660,15 @@ export default function AdminOrdersPage() {
                       Date
                     </TableHeading>
 
-                    <th className="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500">
+                    {/* STICKY ACTION HEADER */}
+
+                    <th className="sticky right-0 z-30 min-w-[110px] border-l border-gray-100 bg-gray-50 px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-gray-500 shadow-[-6px_0_10px_-10px_rgba(0,0,0,0.35)]">
                       Action
                     </th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-gray-100 bg-white">
+                <tbody className="bg-white">
                   {filteredOrders.map(
                     (
                       order
@@ -671,9 +677,9 @@ export default function AdminOrdersPage() {
                         key={
                           order._id
                         }
-                        className="transition hover:bg-pink-50/40"
+                        className="group"
                       >
-                        <td className="whitespace-nowrap px-5 py-4">
+                        <td className="whitespace-nowrap border-b border-gray-100 px-5 py-4 group-hover:bg-pink-50/40">
                           <p className="font-semibold text-gray-900">
                             {
                               order.orderId
@@ -681,12 +687,11 @@ export default function AdminOrdersPage() {
                           </p>
 
                           <p className="mt-1 text-xs text-gray-500">
-                            Cash on
-                            Delivery
+                            Cash on Delivery
                           </p>
                         </td>
 
-                        <td className="px-5 py-4">
+                        <td className="border-b border-gray-100 px-5 py-4 group-hover:bg-pink-50/40">
                           <p className="font-semibold text-gray-900">
                             {
                               order.customerName
@@ -700,8 +705,8 @@ export default function AdminOrdersPage() {
                           </p>
                         </td>
 
-                        <td className="px-5 py-4">
-                          <div className="flex min-w-[220px] items-center gap-3">
+                        <td className="border-b border-gray-100 px-5 py-4 group-hover:bg-pink-50/40">
+                          <div className="flex min-w-[300px] items-center gap-3">
                             <img
                               src={
                                 order
@@ -725,7 +730,7 @@ export default function AdminOrdersPage() {
                             />
 
                             <div className="min-w-0">
-                              <p className="truncate font-semibold text-gray-900">
+                              <p className="max-w-[310px] truncate font-semibold text-gray-900">
                                 {order
                                   .items[0]
                                   ?.name ||
@@ -742,7 +747,12 @@ export default function AdminOrdersPage() {
 
                               {order.items[0]?.size && (
                                 <p className="mt-1 text-xs font-semibold text-pink-600">
-                                  Size: {order.items[0].size}
+                                  Size:{" "}
+                                  {
+                                    order
+                                      .items[0]
+                                      .size
+                                  }
                                 </p>
                               )}
 
@@ -756,8 +766,7 @@ export default function AdminOrdersPage() {
                                     .items
                                     .length -
                                     1}{" "}
-                                  more
-                                  item
+                                  more item
                                   {order
                                     .items
                                     .length >
@@ -770,13 +779,13 @@ export default function AdminOrdersPage() {
                           </div>
                         </td>
 
-                        <td className="whitespace-nowrap px-5 py-4 text-sm font-bold text-gray-900">
+                        <td className="whitespace-nowrap border-b border-gray-100 px-5 py-4 text-sm font-bold text-gray-900 group-hover:bg-pink-50/40">
                           {formatCurrency(
                             order.totalAmount
                           )}
                         </td>
 
-                        <td className="whitespace-nowrap px-5 py-4">
+                        <td className="whitespace-nowrap border-b border-gray-100 px-5 py-4 group-hover:bg-pink-50/40">
                           <span
                             className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${
                               statusStyles[
@@ -791,13 +800,15 @@ export default function AdminOrdersPage() {
                           </span>
                         </td>
 
-                        <td className="whitespace-nowrap px-5 py-4 text-sm text-gray-600">
+                        <td className="whitespace-nowrap border-b border-gray-100 px-5 py-4 text-sm text-gray-600 group-hover:bg-pink-50/40">
                           {formatDate(
                             order.createdAt
                           )}
                         </td>
 
-                        <td className="whitespace-nowrap px-5 py-4 text-right">
+                        {/* STICKY VIEW COLUMN */}
+
+                        <td className="sticky right-0 z-10 whitespace-nowrap border-b border-l border-gray-100 bg-white px-5 py-4 text-right shadow-[-6px_0_10px_-10px_rgba(0,0,0,0.35)] group-hover:bg-pink-50">
                           <button
                             type="button"
                             onClick={() =>
@@ -827,11 +838,12 @@ export default function AdminOrdersPage() {
       {selectedOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white shadow-2xl">
+            {/* POPUP HEADER */}
+
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-100 bg-white px-6 py-5">
               <div>
                 <p className="text-sm font-medium text-gray-500">
-                  Order
-                  Details
+                  Order Details
                 </p>
 
                 <h2 className="mt-1 text-xl font-bold text-gray-900">
@@ -887,8 +899,7 @@ export default function AdminOrdersPage() {
 
                 <div>
                   <p className="text-xs font-bold uppercase tracking-wide text-gray-400">
-                    Delivery
-                    Address
+                    Delivery Address
                   </p>
 
                   <p className="mt-2 text-sm leading-6 text-gray-700">
@@ -916,8 +927,7 @@ export default function AdminOrdersPage() {
               <section>
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-bold text-gray-900">
-                    Ordered
-                    Items
+                    Ordered Items
                   </h3>
 
                   <span
@@ -973,7 +983,10 @@ export default function AdminOrdersPage() {
                           {item.size && (
                             <div className="mt-2">
                               <span className="inline-flex rounded-lg bg-pink-50 px-3 py-1 text-xs font-bold text-pink-600">
-                                Size: {item.size}
+                                Size:{" "}
+                                {
+                                  item.size
+                                }
                               </span>
                             </div>
                           )}
@@ -1018,21 +1031,18 @@ export default function AdminOrdersPage() {
 
                 <div className="mt-3 flex justify-between text-sm text-gray-600">
                   <span>
-                    Payment
-                    Method
+                    Payment Method
                   </span>
 
                   <span className="font-semibold text-gray-900">
-                    Cash on
-                    Delivery
+                    Cash on Delivery
                   </span>
                 </div>
 
                 <div className="mt-4 border-t border-gray-100 pt-4">
                   <div className="flex items-end justify-between">
                     <span className="font-semibold text-gray-700">
-                      Total
-                      Amount
+                      Total Amount
                     </span>
 
                     <span className="text-2xl font-bold text-pink-600">
@@ -1096,8 +1106,7 @@ export default function AdminOrdersPage() {
                         }
                       />
 
-                      Complete
-                      Order
+                      Complete Order
                     </>
                   )}
                 </button>
@@ -1110,8 +1119,7 @@ export default function AdminOrdersPage() {
                     size={20}
                   />
 
-                  Order
-                  Completed
+                  Order Completed
                 </div>
               )}
 
@@ -1135,7 +1143,7 @@ function TableHeading({
   children: React.ReactNode;
 }) {
   return (
-    <th className="px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
+    <th className="bg-gray-50 px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-gray-500">
       {children}
     </th>
   );
@@ -1152,13 +1160,13 @@ function SummaryCard({
   valueClass?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-gray-100 bg-white px-5 py-4 shadow-sm">
       <p className="text-sm font-medium text-gray-500">
         {label}
       </p>
 
       <p
-        className={`mt-2 text-3xl font-bold ${valueClass}`}
+        className={`mt-1 text-2xl font-bold ${valueClass}`}
       >
         {value}
       </p>

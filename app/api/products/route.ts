@@ -18,7 +18,6 @@ interface ProductRequestBody {
   supplier?: unknown;
   costPrice?: unknown;
   sellingPrice?: unknown;
-  stock?: unknown;
   image?: unknown;
   images?: unknown;
   variants?: unknown;
@@ -137,6 +136,7 @@ export async function GET() {
     await connectDB();
 
     const products = await Product.find({})
+      .select("-stock")
       .sort({
         createdAt: -1,
       })
@@ -209,8 +209,6 @@ export async function POST(
       body.sellingPrice
     );
 
-    const stock = Number(body.stock);
-
     if (!name) {
       return NextResponse.json(
         {
@@ -277,14 +275,11 @@ export async function POST(
       );
     }
 
-    if (
-      !Number.isFinite(stock) ||
-      stock < 0
-    ) {
+    if (sellingPrice < costPrice) {
       return NextResponse.json(
         {
           error:
-            "Valid stock quantity is required",
+            "Selling price cannot be lower than cost price",
         },
         {
           status: 400,
@@ -317,6 +312,18 @@ export async function POST(
       body.image
     );
 
+    if (finalImages.length === 0) {
+      return NextResponse.json(
+        {
+          error:
+            "At least one product image is required",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
     const variants: ProductVariant[] =
       getCleanVariants(body.variants);
 
@@ -328,27 +335,28 @@ export async function POST(
         : "Active";
 
     const productData: Omit<
-  ProductDocument,
-  "createdAt" | "updatedAt"
-> = {
-  name,
-  sku: normalizedSku,
-  brand,
-  category,
-  supplier,
-  costPrice,
-  sellingPrice,
-  stock,
-  image: mainImage,
-  images: finalImages,
-  variants,
-  description,
-  status,
-};
+      ProductDocument,
+      "createdAt" | "updatedAt"
+    > = {
+      name,
+      sku: normalizedSku,
+      brand,
+      category,
+      supplier,
+      costPrice,
+      sellingPrice,
+      image: mainImage,
+      images: finalImages,
+      variants,
+      description,
+      status,
+    };
 
-const product = new Product(productData);
+    const product =
+      new Product(productData);
 
-await product.save();
+    await product.save();
+
     return NextResponse.json(product, {
       status: 201,
     });

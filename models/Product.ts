@@ -16,7 +16,6 @@ export interface ProductDocument {
   supplier: string;
   costPrice: number;
   sellingPrice: number;
-  stock: number;
   image: string;
   images: string[];
   variants: ProductVariant[];
@@ -111,19 +110,6 @@ const ProductSchema =
           0,
           "Selling price cannot be negative",
         ],
-      },
-
-      stock: {
-        type: Number,
-        required: [
-          true,
-          "Stock is required",
-        ],
-        min: [
-          0,
-          "Stock cannot be negative",
-        ],
-        default: 0,
       },
 
       image: {

@@ -26,9 +26,13 @@ interface ProductForm {
   supplier: string;
   costPrice: string;
   sellingPrice: string;
-  stock: string;
   description: string;
   status: string;
+}
+
+interface ProductVariant {
+  color?: string;
+  sizes?: string[];
 }
 
 interface ProductResponse {
@@ -39,9 +43,9 @@ interface ProductResponse {
   supplier?: string;
   costPrice?: number | string;
   sellingPrice?: number | string;
-  stock?: number | string;
   image?: string;
   images?: string[];
+  variants?: ProductVariant[];
   description?: string;
   status?: string;
 }
@@ -49,6 +53,30 @@ interface ProductResponse {
 const MAX_IMAGES = 5;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+const CLOTHING_SIZES = [
+  "XS",
+  "S",
+  "M",
+  "L",
+  "XL",
+  "XXL",
+  "3XL",
+  "4XL",
+] as const;
+
+const WAIST_SIZES = [
+  "26",
+  "28",
+  "30",
+  "32",
+  "34",
+  "36",
+  "38",
+  "40",
+  "42",
+  "44",
+] as const;
 
 const initialProduct: ProductForm = {
   name: "",
@@ -58,7 +86,6 @@ const initialProduct: ProductForm = {
   supplier: "",
   costPrice: "",
   sellingPrice: "",
-  stock: "",
   description: "",
   status: "Active",
 };
@@ -82,6 +109,7 @@ export default function EditProductPage() {
   const [pageLoading, setPageLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
 
   const imageInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -130,10 +158,25 @@ export default function EditProductPage() {
           supplier: productData.supplier || "",
           costPrice: String(productData.costPrice ?? ""),
           sellingPrice: String(productData.sellingPrice ?? ""),
-          stock: String(productData.stock ?? ""),
           description: productData.description || "",
           status: productData.status || "Active",
         });
+
+        const loadedSizes = Array.isArray(productData.variants)
+          ? Array.from(
+              new Set(
+                productData.variants.flatMap((variant) =>
+                  Array.isArray(variant.sizes)
+                    ? variant.sizes
+                        .map((size) => String(size).trim())
+                        .filter(Boolean)
+                    : []
+                )
+              )
+            )
+          : [];
+
+        setSelectedSizes(loadedSizes);
 
         const savedImages = Array.isArray(productData.images)
           ? productData.images.filter(
@@ -358,6 +401,14 @@ export default function EditProductPage() {
     });
   };
 
+  const toggleSize = (size: string) => {
+    setSelectedSizes((currentSizes) =>
+      currentSizes.includes(size)
+        ? currentSizes.filter((currentSize) => currentSize !== size)
+        : [...currentSizes, size]
+    );
+  };
+
   const uploadImageFile = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
@@ -433,9 +484,17 @@ export default function EditProductPage() {
           ...product,
           image: finalImageUrls[0],
           images: finalImageUrls,
+          variants:
+            selectedSizes.length > 0
+              ? [
+                  {
+                    color: "",
+                    sizes: selectedSizes,
+                  },
+                ]
+              : [],
           costPrice: Number(product.costPrice),
           sellingPrice: Number(product.sellingPrice),
-          stock: Number(product.stock),
         }),
       });
 
@@ -611,10 +670,10 @@ export default function EditProductPage() {
 
             <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
               <h2 className="mb-6 text-xl font-bold text-gray-900">
-                Pricing & Stock
+                Pricing
               </h2>
 
-              <div className="grid gap-6 md:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2">
                 <div>
                   <label className="mb-2 block font-medium text-gray-800">
                     Cost Price *
@@ -647,21 +706,6 @@ export default function EditProductPage() {
                   />
                 </div>
 
-                <div>
-                  <label className="mb-2 block font-medium text-gray-800">
-                    Stock *
-                  </label>
-                  <input
-                    type="number"
-                    name="stock"
-                    value={product.stock}
-                    onChange={handleChange}
-                    min="0"
-                    step="1"
-                    required
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
-                  />
-                </div>
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -686,6 +730,90 @@ export default function EditProductPage() {
                   <p className="text-sm text-gray-600">Profit Percentage</p>
                   <p className="mt-1 text-2xl font-bold text-blue-700">
                     {profitPercentage.toFixed(1)}%
+                  </p>
+                </div>
+              </div>
+            </div>
+
+
+            {/* AVAILABLE SIZES */}
+
+            <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
+              <div className="mb-6">
+                <h2 className="text-xl font-bold text-gray-900">
+                  Available Sizes
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Select all sizes available for this product. You can use standard clothing sizes,
+                  waist sizes, or both.
+                </p>
+              </div>
+
+              <div className="space-y-6">
+                <div>
+                  <p className="mb-3 font-semibold text-gray-800">
+                    Clothing Sizes
+                  </p>
+
+                  <div className="flex flex-wrap gap-3">
+                    {CLOTHING_SIZES.map((size) => {
+                      const selected = selectedSizes.includes(size);
+
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => toggleSize(size)}
+                          className={`min-w-14 rounded-lg border px-4 py-2.5 text-sm font-bold transition ${
+                            selected
+                              ? "border-pink-600 bg-pink-600 text-white"
+                              : "border-gray-300 bg-white text-gray-700 hover:border-pink-300 hover:text-pink-600"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-3 font-semibold text-gray-800">
+                    Jeans / Bottom Waist Sizes
+                  </p>
+
+                  <div className="flex flex-wrap gap-3">
+                    {WAIST_SIZES.map((size) => {
+                      const selected = selectedSizes.includes(size);
+
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => toggleSize(size)}
+                          className={`min-w-14 rounded-lg border px-4 py-2.5 text-sm font-bold transition ${
+                            selected
+                              ? "border-pink-600 bg-pink-600 text-white"
+                              : "border-gray-300 bg-white text-gray-700 hover:border-pink-300 hover:text-pink-600"
+                          }`}
+                        >
+                          {size}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="rounded-xl bg-gray-50 p-4">
+                  <p className="text-sm font-medium text-gray-600">
+                    Selected Sizes
+                  </p>
+
+                  <p className="mt-2 font-bold text-gray-900">
+                    {selectedSizes.length > 0
+                      ? selectedSizes.join(", ")
+                      : "No size selected"}
                   </p>
                 </div>
               </div>

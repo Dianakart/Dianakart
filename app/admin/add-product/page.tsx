@@ -24,7 +24,6 @@ interface ProductForm {
   supplier: string;
   costPrice: string;
   sellingPrice: string;
-  stock: string;
   image: string;
   images: string[];
   description: string;
@@ -39,7 +38,6 @@ const initialProduct: ProductForm = {
   supplier: "",
   costPrice: "",
   sellingPrice: "",
-  stock: "",
   image: "",
   images: [],
   description: "",
@@ -457,7 +455,6 @@ export default function AddProductPage() {
               : [],
           costPrice: Number(product.costPrice),
           sellingPrice: Number(product.sellingPrice),
-          stock: Number(product.stock),
         }),
       });
 
@@ -690,19 +687,19 @@ export default function AddProductPage() {
               </div>
             </div>
 
-            {/* Pricing and Stock */}
+            {/* Pricing */}
             <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900">
-                  Pricing & Stock
+                  Pricing
                 </h2>
 
                 <p className="mt-1 text-sm text-gray-500">
-                  Set the cost price, selling price and stock.
+                  Set the cost price and selling price.
                 </p>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2">
                 <div>
                   <label className="mb-2 block font-medium text-gray-800">
                     Cost Price
@@ -757,26 +754,6 @@ export default function AddProductPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="mb-2 block font-medium text-gray-800">
-                    Stock
-                    <span className="ml-1 text-red-500">
-                      *
-                    </span>
-                  </label>
-
-                  <input
-                    type="number"
-                    name="stock"
-                    value={product.stock}
-                    onChange={handleChange}
-                    required
-                    min="0"
-                    step="1"
-                    placeholder="0"
-                    className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 outline-none placeholder:text-gray-400 focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
-                  />
-                </div>
               </div>
 
               <div className="mt-6 grid gap-4 md:grid-cols-2">

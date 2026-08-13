@@ -49,7 +49,6 @@ interface Product {
   oldPrice?: number;
   mrp?: number;
 
-  stock: number;
 
   image?: string;
   images?: string[];
@@ -79,7 +78,7 @@ export default function ProductDetailsPage() {
   const productId =
     params.id as string;
 
-  const { addToCart } =
+  const { addToCart, totalItems } =
     useCart();
 
   const [
@@ -101,6 +100,12 @@ export default function ProductDetailsPage() {
     setSelectedSize,
   ] =
     useState("");
+
+  const [
+    addedToCart,
+    setAddedToCart,
+  ] = 
+    useState(false);
 
   const [
     quantity,
@@ -206,6 +211,7 @@ export default function ProductDetailsPage() {
 
           setSelectedSize("");
           setQuantity(1);
+          setAddedToCart(false);
         } catch (
           error
         ) {
@@ -401,27 +407,7 @@ export default function ProductDetailsPage() {
         )
       : 0;
 
-  /* ========================================
-     STOCK
-  ======================================== */
-
-  const isOutOfStock =
-    !product ||
-    Number(
-      product.stock
-    ) <= 0;
-
-  const maxQuantity =
-    Math.max(
-      1,
-      Math.min(
-        Number(
-          product?.stock ||
-            1
-        ),
-        10
-      )
-    );
+  const maxQuantity = 10;
 
   /* ========================================
      QUANTITY
@@ -464,10 +450,7 @@ export default function ProductDetailsPage() {
       redirectToCart =
         false
     ) => {
-      if (
-        !product ||
-        isOutOfStock
-      ) {
+      if (!product) {
         return;
       }
 
@@ -527,6 +510,8 @@ export default function ProductDetailsPage() {
 
           return;
         }
+
+        setAddedToCart(true);
 
         setMessage(
           `${quantity} item${
@@ -683,6 +668,27 @@ export default function ProductDetailsPage() {
           <span className="max-w-[240px] truncate font-medium text-gray-800">
             {product.name}
           </span>
+
+          {/* PRODUCT PAGE CART SHORTCUT */}
+
+          <Link
+            href="/cart"
+            className="ml-auto flex shrink-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 font-semibold text-gray-700 shadow-sm transition hover:border-pink-300 hover:text-pink-600"
+          >
+            <div className="relative">
+              <ShoppingCart size={20} />
+
+              {totalItems > 0 && (
+                <span className="absolute -right-2.5 -top-2.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-pink-600 px-1 text-[11px] font-bold text-white">
+                  {totalItems}
+                </span>
+              )}
+            </div>
+
+            <span className="hidden sm:inline">
+              Cart
+            </span>
+          </Link>
         </div>
       </div>
 
@@ -980,37 +986,6 @@ export default function ProductDetailsPage() {
               </p>
             </div>
 
-            {/* STOCK */}
-
-            <div
-              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold ${
-                isOutOfStock
-                  ? "bg-red-100 text-red-700"
-                  : product.stock <=
-                      5
-                  ? "bg-orange-100 text-orange-700"
-                  : "bg-green-100 text-green-700"
-              }`}
-            >
-              <span
-                className={`h-2.5 w-2.5 rounded-full ${
-                  isOutOfStock
-                    ? "bg-red-500"
-                    : product.stock <=
-                        5
-                    ? "bg-orange-500"
-                    : "bg-green-500"
-                }`}
-              />
-
-              {isOutOfStock
-                ? "Out of Stock"
-                : product.stock <=
-                    5
-                ? `Only ${product.stock} left`
-                : "In Stock"}
-            </div>
-
             {/* SIZE */}
 
             {availableSizes.length > 0 && (
@@ -1067,7 +1042,6 @@ export default function ProductDetailsPage() {
 
             {/* QUANTITY */}
 
-            {!isOutOfStock && (
               <div className="mt-7">
                 <p className="mb-2 text-sm font-semibold text-gray-800">
                   Quantity
@@ -1120,42 +1094,48 @@ export default function ProductDetailsPage() {
                   </button>
                 </div>
 
-                {product.stock >
-                  10 && (
-                  <p className="mt-2 text-xs text-gray-400">
-                    Maximum 10
-                    items per
-                    order
-                  </p>
-                )}
+                <p className="mt-2 text-xs text-gray-400">
+                  Maximum 10 items per order
+                </p>
               </div>
-            )}
 
             {/* BUTTONS */}
 
             <div className="mt-7 grid gap-3 sm:grid-cols-2">
 
-              <button
-                type="button"
-                onClick={() =>
-                  handleAddToCart(
-                    false
-                  )
-                }
-                disabled={
-                  isOutOfStock ||
-                  addingToCart
-                }
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-pink-600 px-4 text-sm font-bold text-pink-600 transition hover:bg-pink-50 disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400"
-              >
-                <ShoppingCart
-                  size={21}
-                />
+              {addedToCart ? (
+                <Link
+                  href="/cart"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-pink-600 bg-pink-50 px-4 text-sm font-bold text-pink-600 transition hover:bg-pink-100"
+                >
+                  <ShoppingCart
+                    size={21}
+                  />
 
-                {addingToCart
-                  ? "Adding..."
-                  : "Add to Cart"}
-              </button>
+                  Go to Cart
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleAddToCart(
+                      false
+                    )
+                  }
+                  disabled={
+                    addingToCart
+                  }
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-pink-600 px-4 text-sm font-bold text-pink-600 transition hover:bg-pink-50 disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400"
+                >
+                  <ShoppingCart
+                    size={21}
+                  />
+
+                  {addingToCart
+                    ? "Adding..."
+                    : "Add to Cart"}
+                </button>
+              )}
 
               <button
                 type="button"
@@ -1165,7 +1145,6 @@ export default function ProductDetailsPage() {
                   )
                 }
                 disabled={
-                  isOutOfStock ||
                   addingToCart
                 }
                 className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-pink-600 px-4 text-sm font-bold text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
@@ -1293,12 +1272,8 @@ export default function ProductDetailsPage() {
             />
 
             <Highlight
-              label="Availability"
-              value={
-                isOutOfStock
-                  ? "Out of Stock"
-                  : "Available"
-              }
+              label="Images"
+              value={`${productImages.length}`}
             />
 
             <Highlight
