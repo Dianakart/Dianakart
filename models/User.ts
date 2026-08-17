@@ -26,6 +26,12 @@ export interface UserDocument {
 
   isActive: boolean;
 
+  emailVerified: boolean;
+  emailOtpHash?: string;
+  emailOtpExpires?: Date | null;
+  emailOtpLastSentAt?: Date | null;
+  emailOtpAttempts: number;
+
   passwordResetToken?: string;
   passwordResetExpires?: Date | null;
 
@@ -152,7 +158,37 @@ const UserSchema =
 
       isActive: {
         type: Boolean,
-        default: true,
+        default: false,
+      },
+
+      emailVerified: {
+        type: Boolean,
+        default: false,
+      },
+
+      emailOtpHash: {
+        type: String,
+        default: "",
+        select: false,
+      },
+
+      emailOtpExpires: {
+        type: Date,
+        default: null,
+        select: false,
+      },
+
+      emailOtpLastSentAt: {
+        type: Date,
+        default: null,
+        select: false,
+      },
+
+      emailOtpAttempts: {
+        type: Number,
+        default: 0,
+        min: 0,
+        select: false,
       },
 
       passwordResetToken: {

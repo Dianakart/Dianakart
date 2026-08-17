@@ -7,18 +7,24 @@ import User from "@/models/User";
 
 export const runtime = "nodejs";
 
-interface RegisterRequestBody {
-  name?: string;
+interface ResendOtpRequestBody {
   email?: string;
-  phone?: string;
-  password?: string;
-  confirmPassword?: string;
 }
 
 const OTP_EXPIRY_MINUTES = 10;
+const RESEND_COOLDOWN_SECONDS = 60;
 
 function generateOtp(): string {
   return randomInt(100000, 1000000).toString();
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 async function sendVerificationEmail({
@@ -31,9 +37,11 @@ async function sendVerificationEmail({
   otp: string;
 }) {
   const apiKey = process.env.BREVO_API_KEY;
+
   const senderEmail =
     process.env.BREVO_SENDER_EMAIL ||
     "noreply@dianakart.in";
+
   const senderName =
     process.env.BREVO_SENDER_NAME ||
     "DianaKart";
@@ -67,7 +75,7 @@ async function sendVerificationEmail({
         ],
 
         subject:
-          "Verify your DianaKart email",
+          "Your new DianaKart verification code",
 
         htmlContent: `
           <!DOCTYPE html>
@@ -145,9 +153,8 @@ async function sendVerificationEmail({
                       line-height:1.7;
                     "
                   >
-                    Use the verification code
-                    below to complete your
-                    DianaKart account registration.
+                    Here is your new DianaKart
+                    verification code.
                   </p>
 
                   <div
@@ -189,9 +196,9 @@ async function sendVerificationEmail({
                       line-height:1.6;
                     "
                   >
-                    If you did not create a
-                    DianaKart account, you can
-                    ignore this email.
+                    If you did not request this
+                    code, you can ignore this
+                    email.
                   </p>
                 </div>
               </div>
@@ -207,7 +214,7 @@ async function sendVerificationEmail({
       await response.text();
 
     console.error(
-      "BREVO EMAIL ERROR:",
+      "BREVO RESEND EMAIL ERROR:",
       response.status,
       errorText
     );
@@ -216,17 +223,6 @@ async function sendVerificationEmail({
       "Unable to send verification email."
     );
   }
-
-  return response.json();
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 export async function POST(
@@ -234,11 +230,7 @@ export async function POST(
 ) {
   try {
     const body =
-      (await request.json()) as RegisterRequestBody;
-
-    const name = String(
-      body.name || ""
-    ).trim();
+      (await request.json()) as ResendOtpRequestBody;
 
     const email = String(
       body.email || ""
@@ -246,45 +238,12 @@ export async function POST(
       .trim()
       .toLowerCase();
 
-    const phone = String(
-      body.phone || ""
-    )
-      .replace(/\D/g, "")
-      .trim();
-
-    const password = String(
-      body.password || ""
-    );
-
-    const confirmPassword = String(
-      body.confirmPassword || ""
-    );
-
-    if (
-      !name ||
-      !email ||
-      !phone ||
-      !password ||
-      !confirmPassword
-    ) {
+    if (!email) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "Please fill in all required fields.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (name.length < 2) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Name must be at least 2 characters.",
+            "Email address is required.",
         },
         {
           status: 400,
@@ -308,110 +267,37 @@ export async function POST(
       );
     }
 
-    const phonePattern =
-      /^[6-9]\d{9}$/;
-
-    if (!phonePattern.test(phone)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Please enter a valid 10-digit Indian phone number.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (password.length < 8) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Password must be at least 8 characters.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (!/[A-Za-z]/.test(password)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Password must contain at least one letter.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (!/\d/.test(password)) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Password must contain at least one number.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    if (password !== confirmPassword) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "Passwords do not match.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
     await connectDB();
 
-    const existingByPhone =
-      await User.findOne({
-        phone,
-      }).lean();
-
-    if (existingByPhone) {
-      return NextResponse.json(
-        {
-          success: false,
-          message:
-            "An account with this phone number already exists.",
-        },
-        {
-          status: 409,
-        }
-      );
-    }
-
-    const existingUser =
+    const user =
       await User.findOne({
         email,
       }).select(
         "+emailOtpHash +emailOtpExpires +emailOtpLastSentAt +emailOtpAttempts"
       );
 
+    if (!user) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "No account found with this email.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
     if (
-      existingUser &&
-      existingUser.emailVerified
+      user.emailVerified &&
+      user.isActive
     ) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "An account with this email already exists.",
+            "This email is already verified. Please login.",
         },
         {
           status: 409,
@@ -419,12 +305,45 @@ export async function POST(
       );
     }
 
+    if (user.emailOtpLastSentAt) {
+      const elapsedSeconds =
+        Math.floor(
+          (
+            Date.now() -
+            user.emailOtpLastSentAt.getTime()
+          ) / 1000
+        );
+
+      if (
+        elapsedSeconds <
+        RESEND_COOLDOWN_SECONDS
+      ) {
+        const waitSeconds =
+          RESEND_COOLDOWN_SECONDS -
+          elapsedSeconds;
+
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              `Please wait ${waitSeconds} seconds before requesting another OTP.`,
+            retryAfter:
+              waitSeconds,
+          },
+          {
+            status: 429,
+          }
+        );
+      }
+    }
+
     const otp = generateOtp();
 
-    const otpHash = await hash(
-      otp,
-      12
-    );
+    const otpHash =
+      await hash(
+        otp,
+        12
+      );
 
     const otpExpires =
       new Date(
@@ -434,64 +353,19 @@ export async function POST(
             1000
       );
 
-    const now = new Date();
+    user.emailOtpHash =
+      otpHash;
 
-    const hashedPassword =
-      await hash(
-        password,
-        12
-      );
+    user.emailOtpExpires =
+      otpExpires;
 
-    let user;
+    user.emailOtpLastSentAt =
+      new Date();
 
-    if (existingUser) {
-      existingUser.name = name;
-      existingUser.phone = phone;
-      existingUser.password =
-        hashedPassword;
+    user.emailOtpAttempts =
+      0;
 
-      existingUser.isActive = false;
-      existingUser.emailVerified =
-        false;
-
-      existingUser.emailOtpHash =
-        otpHash;
-
-      existingUser.emailOtpExpires =
-        otpExpires;
-
-      existingUser.emailOtpLastSentAt =
-        now;
-
-      existingUser.emailOtpAttempts =
-        0;
-
-      user =
-        await existingUser.save();
-    } else {
-      user =
-        await User.create({
-          name,
-          email,
-          phone,
-          password:
-            hashedPassword,
-
-          isActive: false,
-          emailVerified: false,
-
-          emailOtpHash:
-            otpHash,
-
-          emailOtpExpires:
-            otpExpires,
-
-          emailOtpLastSentAt:
-            now,
-
-          emailOtpAttempts: 0,
-        });
-    }
+    await user.save();
 
     try {
       await sendVerificationEmail({
@@ -503,25 +377,15 @@ export async function POST(
       });
     } catch (emailError) {
       console.error(
-        "OTP SEND ERROR:",
+        "RESEND OTP SEND ERROR:",
         emailError
       );
-
-      /*
-       * We keep the unverified user
-       * so a resend OTP request can
-       * retry email delivery later.
-       */
 
       return NextResponse.json(
         {
           success: false,
           message:
-            "Your account was created, but we could not send the verification code. Please try Resend OTP.",
-          requiresVerification:
-            true,
-          email:
-            user.email,
+            "Unable to send a new verification code. Please try again.",
         },
         {
           status: 502,
@@ -533,20 +397,15 @@ export async function POST(
       {
         success: true,
         message:
-          "Verification code sent to your email.",
-        requiresVerification:
-          true,
-
-        email:
-          user.email,
+          "A new verification code has been sent to your email.",
       },
       {
-        status: 201,
+        status: 200,
       }
     );
   } catch (error) {
     console.error(
-      "CUSTOMER REGISTER API ERROR:",
+      "RESEND OTP API ERROR:",
       error
     );
 
@@ -554,7 +413,7 @@ export async function POST(
       {
         success: false,
         message:
-          "Unable to create account. Please try again.",
+          "Unable to resend verification code. Please try again.",
       },
       {
         status: 500,
