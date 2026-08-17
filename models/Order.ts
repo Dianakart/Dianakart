@@ -11,6 +11,7 @@ export type OrderStatus =
 
 export interface IOrderItem {
   productId: string;
+  sku?: string;
   name: string;
   image: string;
   price: number;
@@ -53,6 +54,13 @@ const orderItemSchema =
         type: String,
         required: true,
         trim: true,
+      },
+
+      sku: {
+        type: String,
+        default: "",
+        trim: true,
+        uppercase: true,
       },
 
       name: {

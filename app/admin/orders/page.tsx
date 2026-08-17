@@ -23,6 +23,7 @@ type OrderStatus =
 
 type OrderItem = {
   productId: string;
+  sku?: string;
   name: string;
   image: string;
   price: number;
@@ -979,6 +980,17 @@ export default function AdminOrdersPage() {
                               item.name
                             }
                           </p>
+
+                          {item.sku && (
+                            <div className="mt-2">
+                              <span className="inline-flex rounded-lg bg-gray-100 px-3 py-1 text-xs font-bold text-gray-700">
+                                Product Code / SKU:{" "}
+                                {
+                                  item.sku
+                                }
+                              </span>
+                            </div>
+                          )}
 
                           {item.size && (
                             <div className="mt-2">

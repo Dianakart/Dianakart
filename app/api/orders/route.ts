@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { cookies } from "next/headers";
 
 import {
@@ -20,6 +21,8 @@ import {
 import Order, {
   IOrderItem,
 } from "@/models/Order";
+
+import Product from "@/models/Product";
 
 export const runtime = "nodejs";
 
@@ -90,6 +93,8 @@ interface RawOrderItem {
 
 /* ========================================
    GET - ADMIN: LOAD ALL ORDERS
+   SKU is enriched from Product DB for
+   legacy orders that were saved earlier.
 ======================================== */
 
 export async function GET() {
@@ -119,9 +124,72 @@ export async function GET() {
         })
         .lean();
 
+    const productIds = Array.from(
+      new Set(
+        orders.flatMap((order) =>
+          order.items
+            .map((item) =>
+              String(
+                item.productId || ""
+              ).trim()
+            )
+            .filter((id) =>
+              mongoose.Types.ObjectId.isValid(
+                id
+              )
+            )
+        )
+      )
+    );
+
+    const products =
+      productIds.length > 0
+        ? await Product.find({
+            _id: {
+              $in: productIds,
+            },
+          })
+            .select("_id sku")
+            .lean()
+        : [];
+
+    const skuByProductId =
+      new Map<string, string>(
+        products.map(
+          (product) => [
+            String(product._id),
+            String(
+              product.sku || ""
+            ).trim(),
+          ]
+        )
+      );
+
+    const ordersWithSku =
+      orders.map((order) => ({
+        ...order,
+
+        items: order.items.map(
+          (item) => ({
+            ...item,
+
+            sku:
+              String(
+                item.sku || ""
+              ).trim() ||
+              skuByProductId.get(
+                String(
+                  item.productId
+                )
+              ) ||
+              "",
+          })
+        ),
+      }));
+
     return NextResponse.json({
       success: true,
-      orders,
+      orders: ordersWithSku,
     });
   } catch (error) {
     console.error(
@@ -144,6 +212,8 @@ export async function GET() {
 
 /* ========================================
    POST - CUSTOMER: PLACE ORDER
+   Customer does NOT send SKU.
+   Backend reads SKU directly from Product DB.
 ======================================== */
 
 export async function POST(
@@ -283,7 +353,7 @@ export async function POST(
       );
     }
 
-    const items: IOrderItem[] =
+    const parsedItems =
       body.items
         .filter(
           (
@@ -296,7 +366,7 @@ export async function POST(
         .map(
           (
             item: RawOrderItem
-          ): IOrderItem => ({
+          ) => ({
             productId:
               String(
                 item.productId ||
@@ -346,7 +416,7 @@ export async function POST(
         );
 
     if (
-      items.length === 0
+      parsedItems.length === 0
     ) {
       return NextResponse.json(
         {
@@ -359,6 +429,59 @@ export async function POST(
         }
       );
     }
+
+    await connectDB();
+
+    const validProductIds =
+      Array.from(
+        new Set(
+          parsedItems
+            .map(
+              (item) =>
+                item.productId
+            )
+            .filter((id) =>
+              mongoose.Types.ObjectId.isValid(
+                id
+              )
+            )
+        )
+      );
+
+    const products =
+      validProductIds.length > 0
+        ? await Product.find({
+            _id: {
+              $in: validProductIds,
+            },
+          })
+            .select("_id sku")
+            .lean()
+        : [];
+
+    const skuByProductId =
+      new Map<string, string>(
+        products.map(
+          (product) => [
+            String(product._id),
+            String(
+              product.sku || ""
+            ).trim(),
+          ]
+        )
+      );
+
+    const items: IOrderItem[] =
+      parsedItems.map(
+        (item) => ({
+          ...item,
+
+          sku:
+            skuByProductId.get(
+              item.productId
+            ) || "",
+        })
+      );
 
     const totalItems =
       items.reduce(
@@ -382,8 +505,6 @@ export async function POST(
             item.quantity,
         0
       );
-
-    await connectDB();
 
     const order =
       await Order.create({
