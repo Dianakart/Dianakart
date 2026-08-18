@@ -44,6 +44,10 @@ export default function Hero() {
 
   const timeoutRef = useRef<number | null>(null);
 
+  // ============================
+  // FETCH BANNERS
+  // ============================
+
   useEffect(() => {
     const fetchBanners = async () => {
       try {
@@ -93,6 +97,32 @@ export default function Hero() {
     fetchBanners();
   }, []);
 
+  // ============================
+  // PRELOAD ALL BANNERS
+  // ============================
+
+  useEffect(() => {
+    if (banners.length === 0) {
+      return;
+    }
+
+    banners.forEach((banner) => {
+      if (banner.desktopImage) {
+        const desktopImage = new Image();
+        desktopImage.src = banner.desktopImage;
+      }
+
+      if (banner.mobileImage) {
+        const mobileImage = new Image();
+        mobileImage.src = banner.mobileImage;
+      }
+    });
+  }, [banners]);
+
+  // ============================
+  // AUTO SLIDE
+  // ============================
+
   useEffect(() => {
     if (
       banners.length <= 1 ||
@@ -103,6 +133,7 @@ export default function Hero() {
 
     const interval = window.setInterval(() => {
       setIsTransitioning(true);
+
       setCurrentIndex((previousIndex) =>
         previousIndex + 1
       );
@@ -113,6 +144,10 @@ export default function Hero() {
     };
   }, [banners.length, isPaused]);
 
+  // ============================
+  // CLEANUP
+  // ============================
+
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -121,18 +156,25 @@ export default function Hero() {
     };
   }, []);
 
+  // ============================
+  // INFINITE LOOP RESET
+  // ============================
+
   const handleTransitionEnd = () => {
-    if (
-      currentIndex === banners.length
-    ) {
+    if (currentIndex === banners.length) {
       setIsTransitioning(false);
       setCurrentIndex(0);
 
-      timeoutRef.current = window.setTimeout(() => {
-        setIsTransitioning(true);
-      }, 50);
+      timeoutRef.current =
+        window.setTimeout(() => {
+          setIsTransitioning(true);
+        }, 50);
     }
   };
+
+  // ============================
+  // PREVIOUS
+  // ============================
 
   const goToPrevious = () => {
     if (banners.length <= 1) {
@@ -146,7 +188,9 @@ export default function Hero() {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setIsTransitioning(true);
-          setCurrentIndex(banners.length - 1);
+          setCurrentIndex(
+            banners.length - 1
+          );
         });
       });
 
@@ -154,10 +198,16 @@ export default function Hero() {
     }
 
     setIsTransitioning(true);
-    setCurrentIndex((previousIndex) =>
-      previousIndex - 1
+
+    setCurrentIndex(
+      (previousIndex) =>
+        previousIndex - 1
     );
   };
+
+  // ============================
+  // NEXT
+  // ============================
 
   const goToNext = () => {
     if (banners.length <= 1) {
@@ -165,14 +215,20 @@ export default function Hero() {
     }
 
     setIsTransitioning(true);
-    setCurrentIndex((previousIndex) =>
-      previousIndex + 1
+
+    setCurrentIndex(
+      (previousIndex) =>
+        previousIndex + 1
     );
   };
 
+  // ============================
+  // LOADING
+  // ============================
+
   if (loading) {
     return (
-      <section className="flex min-h-[250px] items-center justify-center bg-white">
+      <section className="flex min-h-[220px] items-center justify-center bg-white">
         <div className="text-center">
           <Loader2
             size={38}
@@ -187,26 +243,30 @@ export default function Hero() {
     );
   }
 
+  // ============================
+  // FALLBACK
+  // ============================
+
   if (banners.length === 0) {
     return (
       <section className="bg-gradient-to-r from-blue-50 via-white to-slate-50">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-14 md:grid-cols-2">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 md:text-6xl">
+            <h1 className="text-4xl font-bold leading-tight text-gray-900 md:text-6xl">
               Find Your{" "}
               <span className="text-blue-700">
                 Perfect Style
               </span>
             </h1>
 
-            <p className="mt-5 text-lg text-gray-600">
+            <p className="mt-5 max-w-lg text-lg text-gray-600">
               Explore fashion, footwear,
-              handbags and jewellery.
+              handbags, jewellery and more.
             </p>
 
             <Link
               href="/products"
-              className="mt-8 inline-flex rounded-xl bg-blue-700 px-8 py-3 font-semibold text-white hover:bg-blue-800"
+              className="mt-8 inline-flex rounded-xl bg-blue-700 px-8 py-3 font-semibold text-white transition hover:bg-blue-800"
             >
               Shop Now
             </Link>
@@ -216,6 +276,7 @@ export default function Hero() {
     );
   }
 
+  // First banner clone at end
   const sliderBanners =
     banners.length > 1
       ? [...banners, banners[0]]
@@ -229,14 +290,22 @@ export default function Hero() {
   return (
     <section
       className="relative w-full overflow-hidden bg-white"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      onMouseEnter={() =>
+        setIsPaused(true)
+      }
+      onMouseLeave={() =>
+        setIsPaused(false)
+      }
     >
-      <div className="relative mx-auto w-full max-w-[1600px] overflow-hidden">
+      <div className="relative mx-auto w-full max-w-[1500px] overflow-hidden">
+
+        {/* SLIDER TRACK */}
 
         <div
-          onTransitionEnd={handleTransitionEnd}
-          className={`flex ${
+          onTransitionEnd={
+            handleTransitionEnd
+          }
+          className={`flex will-change-transform ${
             isTransitioning
               ? "transition-transform duration-700 ease-in-out"
               : ""
@@ -247,47 +316,65 @@ export default function Hero() {
             }%)`,
           }}
         >
-          {sliderBanners.map((banner, index) => {
-            const imageContent = (
-              <picture>
-                {banner.mobileImage && (
-                  <source
-                    media="(max-width: 767px)"
-                    srcSet={banner.mobileImage}
+          {sliderBanners.map(
+            (banner, index) => {
+              const imageContent = (
+                <picture>
+                  {banner.mobileImage && (
+                    <source
+                      media="(max-width: 767px)"
+                      srcSet={
+                        banner.mobileImage
+                      }
+                    />
+                  )}
+
+                  <img
+                    src={
+                      banner.desktopImage
+                    }
+                    alt={
+                      banner.title ||
+                      "DianaKart promotional banner"
+                    }
+                    draggable={false}
+                    loading="eager"
+                    decoding="sync"
+                    className="
+                      block
+                      h-auto
+                      w-full
+                      select-none
+                      object-contain
+                    "
                   />
-                )}
+                </picture>
+              );
 
-                <img
-                  src={banner.desktopImage}
-                  alt={
-                    banner.title ||
-                    "DianaKart promotional banner"
-                  }
-                  className="block w-full object-contain"
-                  draggable={false}
-                />
-              </picture>
-            );
-
-            return (
-              <div
-                key={`${banner._id}-${index}`}
-                className="w-full min-w-full shrink-0"
-              >
-                {banner.buttonLink ? (
-                  <Link
-                    href={banner.buttonLink}
-                    className="block w-full"
-                  >
-                    {imageContent}
-                  </Link>
-                ) : (
-                  imageContent
-                )}
-              </div>
-            );
-          })}
+              return (
+                <div
+                  key={`${banner._id}-${index}`}
+                  className="w-full min-w-full shrink-0"
+                >
+                  {banner.buttonLink ? (
+                    <Link
+                      href={
+                        banner.buttonLink
+                      }
+                      className="block w-full"
+                    >
+                      {imageContent}
+                    </Link>
+                  ) : (
+                    imageContent
+                  )}
+                </div>
+              );
+            }
+          )}
         </div>
+
+        {/* CONTROLS */}
 
         {banners.length > 1 && (
           <>
@@ -295,39 +382,107 @@ export default function Hero() {
               type="button"
               onClick={goToPrevious}
               aria-label="Previous banner"
-              className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/60 md:left-5 md:h-12 md:w-12"
+              className="
+                absolute
+                left-2
+                top-1/2
+                z-20
+                flex
+                h-9
+                w-9
+                -translate-y-1/2
+                items-center
+                justify-center
+                rounded-full
+                bg-black/35
+                text-white
+                shadow-lg
+                backdrop-blur-sm
+                transition
+                hover:bg-black/60
+                md:left-4
+                md:h-11
+                md:w-11
+              "
             >
-              <ChevronLeft size={28} />
+              <ChevronLeft size={27} />
             </button>
 
             <button
               type="button"
               onClick={goToNext}
               aria-label="Next banner"
-              className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/60 md:right-5 md:h-12 md:w-12"
+              className="
+                absolute
+                right-2
+                top-1/2
+                z-20
+                flex
+                h-9
+                w-9
+                -translate-y-1/2
+                items-center
+                justify-center
+                rounded-full
+                bg-black/35
+                text-white
+                shadow-lg
+                backdrop-blur-sm
+                transition
+                hover:bg-black/60
+                md:right-4
+                md:h-11
+                md:w-11
+              "
             >
-              <ChevronRight size={28} />
+              <ChevronRight size={27} />
             </button>
 
-            <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-2 backdrop-blur-sm">
-              {banners.map((banner, index) => (
-                <button
-                  key={banner._id}
-                  type="button"
-                  onClick={() => {
-                    setIsTransitioning(true);
-                    setCurrentIndex(index);
-                  }}
-                  aria-label={`Show banner ${
-                    index + 1
-                  }`}
-                  className={`h-2.5 rounded-full transition-all duration-300 ${
-                    visibleDotIndex === index
-                      ? "w-7 bg-white"
-                      : "w-2.5 bg-white/60 hover:bg-white"
-                  }`}
-                />
-              ))}
+            {/* DOTS */}
+
+            <div
+              className="
+                absolute
+                bottom-2
+                left-1/2
+                z-20
+                flex
+                -translate-x-1/2
+                items-center
+                gap-2
+                rounded-full
+                bg-black/30
+                px-3
+                py-1.5
+                backdrop-blur-sm
+                md:bottom-3
+              "
+            >
+              {banners.map(
+                (
+                  banner,
+                  index
+                ) => (
+                  <button
+                    key={
+                      banner._id
+                    }
+                    type="button"
+                    onClick={() => {
+                      setIsTransitioning(true);
+                      setCurrentIndex(index);
+                    }}
+                    aria-label={`Show banner ${
+                      index + 1
+                    }`}
+                    className={`h-2.5 rounded-full transition-all duration-300 ${
+                      visibleDotIndex === index
+                        ? "w-7 bg-white"
+                        : "w-2.5 bg-white/60 hover:bg-white"
+                    }`}
+                  />
+                )
+              )}
             </div>
           </>
         )}
