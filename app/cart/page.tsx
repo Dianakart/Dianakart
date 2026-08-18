@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -40,7 +40,7 @@ export default function CartPage() {
         <div className="mb-8 flex items-center justify-between gap-4">
           <div>
             <h1 className="flex items-center gap-3 text-3xl font-bold text-gray-900 sm:text-4xl">
-              <ShoppingBag className="h-8 w-8 text-pink-600" />
+              <ShoppingBag className="h-8 w-8 text-blue-700" />
               Shopping Cart
             </h1>
 
@@ -51,7 +51,7 @@ export default function CartPage() {
 
           <Link
             href="/products"
-            className="hidden items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-pink-500 hover:text-pink-600 sm:flex"
+            className="hidden items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:border-blue-600 hover:text-blue-700 sm:flex"
           >
             <ArrowLeft size={18} />
             Continue Shopping
@@ -60,8 +60,8 @@ export default function CartPage() {
 
         {cart.length === 0 ? (
           <section className="rounded-3xl border border-gray-100 bg-white px-6 py-16 text-center shadow-sm">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-pink-50">
-              <ShoppingBag className="h-10 w-10 text-pink-600" />
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-50">
+              <ShoppingBag className="h-10 w-10 text-blue-700" />
             </div>
 
             <h2 className="mt-6 text-2xl font-bold text-gray-900">
@@ -75,7 +75,7 @@ export default function CartPage() {
 
             <Link
               href="/products"
-              className="mt-7 inline-flex items-center justify-center rounded-xl bg-pink-600 px-6 py-3 font-semibold text-white transition hover:bg-pink-700"
+              className="mt-7 inline-flex items-center justify-center rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white transition hover:bg-blue-800"
             >
               Start Shopping
             </Link>
@@ -104,14 +104,14 @@ export default function CartPage() {
 
                     <div className="min-w-0 flex-1">
                       <Link href={`/products/${item.id}`}>
-                        <h2 className="line-clamp-2 text-base font-semibold text-gray-900 transition hover:text-pink-600 sm:text-lg">
+                        <h2 className="line-clamp-2 text-base font-semibold text-gray-900 transition hover:text-blue-700 sm:text-lg">
                           {item.name}
                         </h2>
                       </Link>
 
                       {item.size && (
                         <div className="mt-2">
-                          <span className="inline-flex rounded-lg bg-pink-50 px-3 py-1.5 text-sm font-bold text-pink-600">
+                          <span className="inline-flex rounded-lg bg-blue-50 px-3 py-1.5 text-sm font-bold text-blue-700">
                             Size: {item.size}
                           </span>
                         </div>
@@ -178,7 +178,7 @@ export default function CartPage() {
 
               <Link
                 href="/products"
-                className="flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-3 font-semibold text-gray-700 transition hover:border-pink-500 hover:text-pink-600 sm:hidden"
+                className="flex items-center justify-center gap-2 rounded-xl border border-gray-300 bg-white px-5 py-3 font-semibold text-gray-700 transition hover:border-blue-600 hover:text-blue-700 sm:hidden"
               >
                 <ArrowLeft size={18} />
                 Continue Shopping
@@ -236,7 +236,7 @@ export default function CartPage() {
 
               <Link
                 href="/checkout"
-                className="mt-7 flex w-full items-center justify-center rounded-xl bg-pink-600 px-5 py-3.5 font-bold text-white transition hover:bg-pink-700"
+                className="mt-7 flex w-full items-center justify-center rounded-xl bg-blue-700 px-5 py-3.5 font-bold text-white transition hover:bg-blue-800"
               >
                 Proceed to Checkout
               </Link>

@@ -45,11 +45,9 @@ export async function POST(
         {
           success: false,
           message:
-            "Token and password fields are required.",
+            "Reset token and password fields are required.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
@@ -60,9 +58,21 @@ export async function POST(
           message:
             "Password must be at least 8 characters.",
         },
+        { status: 400 }
+      );
+    }
+
+    if (
+      !/[A-Za-z]/.test(password) ||
+      !/\d/.test(password)
+    ) {
+      return NextResponse.json(
         {
-          status: 400,
-        }
+          success: false,
+          message:
+            "Password must contain at least one letter and one number.",
+        },
+        { status: 400 }
       );
     }
 
@@ -76,9 +86,7 @@ export async function POST(
           message:
             "Passwords do not match.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
@@ -90,24 +98,24 @@ export async function POST(
 
     await connectDB();
 
-    const user = await User.findOne({
-      passwordResetToken:
-        hashedToken,
-      passwordResetExpires: {
-        $gt: new Date(),
-      },
-    }).select("+password");
+    const user =
+      await User.findOne({
+        passwordResetToken:
+          hashedToken,
+
+        passwordResetExpires: {
+          $gt: new Date(),
+        },
+      }).select("+password");
 
     if (!user) {
       return NextResponse.json(
         {
           success: false,
           message:
-            "This reset link is invalid or has expired.",
+            "This password reset session is invalid or has expired.",
         },
-        {
-          status: 400,
-        }
+        { status: 400 }
       );
     }
 
@@ -125,6 +133,18 @@ export async function POST(
 
     user.passwordResetExpires =
       null;
+
+    user.passwordResetOtpHash =
+      "";
+
+    user.passwordResetOtpExpires =
+      null;
+
+    user.passwordResetOtpLastSentAt =
+      null;
+
+    user.passwordResetOtpAttempts =
+      0;
 
     await user.save();
 
@@ -145,9 +165,7 @@ export async function POST(
         message:
           "Unable to reset password. Please try again.",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }

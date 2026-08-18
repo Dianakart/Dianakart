@@ -5,7 +5,6 @@ import mongoose, {
 
 export interface UserAddress {
   _id?: mongoose.Types.ObjectId;
-
   label: string;
   fullName: string;
   phone: string;
@@ -31,6 +30,11 @@ export interface UserDocument {
   emailOtpExpires?: Date | null;
   emailOtpLastSentAt?: Date | null;
   emailOtpAttempts: number;
+
+  passwordResetOtpHash?: string;
+  passwordResetOtpExpires?: Date | null;
+  passwordResetOtpLastSentAt?: Date | null;
+  passwordResetOtpAttempts: number;
 
   passwordResetToken?: string;
   passwordResetExpires?: Date | null;
@@ -185,6 +189,31 @@ const UserSchema =
       },
 
       emailOtpAttempts: {
+        type: Number,
+        default: 0,
+        min: 0,
+        select: false,
+      },
+
+      passwordResetOtpHash: {
+        type: String,
+        default: "",
+        select: false,
+      },
+
+      passwordResetOtpExpires: {
+        type: Date,
+        default: null,
+        select: false,
+      },
+
+      passwordResetOtpLastSentAt: {
+        type: Date,
+        default: null,
+        select: false,
+      },
+
+      passwordResetOtpAttempts: {
         type: Number,
         default: 0,
         min: 0,

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   FormEvent,
@@ -802,7 +802,7 @@ export default function CheckoutPage() {
     return (
       <main className="flex min-h-[70vh] items-center justify-center bg-gray-50">
         <div className="text-center">
-          <Loader2 className="mx-auto h-9 w-9 animate-spin text-pink-600" />
+          <Loader2 className="mx-auto h-9 w-9 animate-spin text-blue-700" />
 
           <p className="mt-4 font-medium text-gray-600">
             Loading checkout...
@@ -831,12 +831,12 @@ export default function CheckoutPage() {
           </p>
 
           {placedOrderId && (
-            <div className="mt-6 rounded-xl bg-pink-50 px-5 py-4">
+            <div className="mt-6 rounded-xl bg-blue-50 px-5 py-4">
               <p className="text-sm text-gray-500">
                 Order ID
               </p>
 
-              <p className="mt-1 text-lg font-bold text-pink-600">
+              <p className="mt-1 text-lg font-bold text-blue-700">
                 {placedOrderId}
               </p>
             </div>
@@ -870,7 +870,7 @@ export default function CheckoutPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               href="/products"
-              className="rounded-xl bg-pink-600 px-6 py-3 font-semibold text-white transition hover:bg-pink-700"
+              className="rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white transition hover:bg-blue-800"
             >
               Continue Shopping
             </Link>
@@ -893,14 +893,14 @@ export default function CheckoutPage() {
         <div className="mb-8">
           <Link
             href="/cart"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition hover:text-pink-600"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600 transition hover:text-blue-700"
           >
             <ArrowLeft size={18} />
             Back to Cart
           </Link>
 
           <h1 className="mt-5 flex items-center gap-3 text-3xl font-bold text-gray-900 sm:text-4xl">
-            <ShoppingBag className="h-8 w-8 text-pink-600" />
+            <ShoppingBag className="h-8 w-8 text-blue-700" />
             Checkout
           </h1>
 
@@ -912,8 +912,8 @@ export default function CheckoutPage() {
 
         {cart.length === 0 ? (
           <section className="rounded-3xl border border-gray-100 bg-white px-6 py-16 text-center shadow-sm">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-pink-50">
-              <ShoppingBag className="h-10 w-10 text-pink-600" />
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-50">
+              <ShoppingBag className="h-10 w-10 text-blue-700" />
             </div>
 
             <h2 className="mt-6 text-2xl font-bold text-gray-900">
@@ -927,7 +927,7 @@ export default function CheckoutPage() {
 
             <Link
               href="/products"
-              className="mt-7 inline-flex rounded-xl bg-pink-600 px-6 py-3 font-semibold text-white transition hover:bg-pink-700"
+              className="mt-7 inline-flex rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white transition hover:bg-blue-800"
             >
               Browse Products
             </Link>
@@ -943,8 +943,8 @@ export default function CheckoutPage() {
               <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-7">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-pink-50">
-                      <MapPin className="h-5 w-5 text-pink-600" />
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50">
+                      <MapPin className="h-5 w-5 text-blue-700" />
                     </div>
 
                     <div>
@@ -963,7 +963,7 @@ export default function CheckoutPage() {
                   <button
                     type="button"
                     onClick={startNewAddress}
-                    className="inline-flex items-center gap-2 rounded-xl bg-pink-50 px-4 py-2.5 text-sm font-bold text-pink-600 transition hover:bg-pink-100"
+                    className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-4 py-2.5 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
                   >
                     <Plus size={17} />
                     Add New Address
@@ -988,8 +988,8 @@ export default function CheckoutPage() {
                             key={id}
                             className={`rounded-2xl border-2 p-5 transition ${
                               selected
-                                ? "border-pink-500 bg-pink-50/40"
-                                : "border-gray-200 bg-white hover:border-pink-200"
+                                ? "border-blue-600 bg-blue-50/40"
+                                : "border-gray-200 bg-white hover:border-blue-200"
                             }`}
                           >
                             <div className="flex items-start gap-4">
@@ -1010,7 +1010,7 @@ export default function CheckoutPage() {
                                 }}
                                 className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
                                   selected
-                                    ? "border-pink-600 bg-pink-600 text-white"
+                                    ? "border-blue-700 bg-blue-700 text-white"
                                     : "border-gray-300"
                                 }`}
                               >
@@ -1088,7 +1088,7 @@ export default function CheckoutPage() {
                                         updatingDefaultId ===
                                         id
                                       }
-                                      className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 transition hover:border-pink-300 hover:text-pink-600 disabled:opacity-50"
+                                      className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-bold text-gray-700 transition hover:border-blue-300 hover:text-blue-700 disabled:opacity-50"
                                     >
                                       {updatingDefaultId ===
                                       id
@@ -1141,9 +1141,9 @@ export default function CheckoutPage() {
                 {/* NEW ADDRESS FORM */}
 
                 {addressMode === "new" && (
-                  <div className="mt-7 rounded-2xl border border-pink-200 bg-pink-50/30 p-5 sm:p-6">
+                  <div className="mt-7 rounded-2xl border border-blue-200 bg-blue-50/30 p-5 sm:p-6">
                     <div className="flex items-center gap-3">
-                      <Home className="h-5 w-5 text-pink-600" />
+                      <Home className="h-5 w-5 text-blue-700" />
 
                       <h3 className="text-lg font-bold text-gray-900">
                         Add New Address
@@ -1164,7 +1164,7 @@ export default function CheckoutPage() {
                           onChange={
                             handleChange
                           }
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                         >
                           <option value="Home">
                             Home
@@ -1194,7 +1194,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="Full name"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                         />
                       </div>
 
@@ -1215,7 +1215,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="10-digit mobile number"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                         />
                       </div>
 
@@ -1234,7 +1234,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="Email"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                         />
                       </div>
 
@@ -1253,7 +1253,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="House number, street, area and landmark"
-                          className="w-full resize-none rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full resize-none rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                         />
                       </div>
 
@@ -1271,7 +1271,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="City"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                         />
                       </div>
 
@@ -1289,7 +1289,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="State"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                         />
                       </div>
 
@@ -1309,7 +1309,7 @@ export default function CheckoutPage() {
                             handleChange
                           }
                           placeholder="6-digit PIN code"
-                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-pink-500 focus:ring-2 focus:ring-pink-100"
+                          className="w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder:text-gray-400 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
                         />
                       </div>
                     </div>
@@ -1351,8 +1351,8 @@ export default function CheckoutPage() {
 
               <section className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm sm:p-7">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-pink-50">
-                    <CreditCard className="h-5 w-5 text-pink-600" />
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-blue-50">
+                    <CreditCard className="h-5 w-5 text-blue-700" />
                   </div>
 
                   <div>
@@ -1367,7 +1367,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <label className="mt-6 flex cursor-pointer items-center gap-4 rounded-xl border-2 border-pink-500 bg-pink-50 p-4">
+                <label className="mt-6 flex cursor-pointer items-center gap-4 rounded-xl border-2 border-blue-600 bg-blue-50 p-4">
                   <input
                     type="radio"
                     name="paymentMethod"
@@ -1379,10 +1379,10 @@ export default function CheckoutPage() {
                     onChange={
                       handleChange
                     }
-                    className="h-4 w-4 accent-pink-600"
+                    className="h-4 w-4 accent-blue-700"
                   />
 
-                  <Truck className="h-6 w-6 text-pink-600" />
+                  <Truck className="h-6 w-6 text-blue-700" />
 
                   <div>
                     <p className="font-semibold text-gray-900">
@@ -1402,7 +1402,7 @@ export default function CheckoutPage() {
 
             <aside className="h-fit rounded-2xl border border-gray-100 bg-white p-6 shadow-sm lg:sticky lg:top-28">
               <div className="flex items-center gap-3">
-                <PackageCheck className="h-6 w-6 text-pink-600" />
+                <PackageCheck className="h-6 w-6 text-blue-700" />
 
                 <h2 className="text-2xl font-bold text-gray-900">
                   Order Summary
@@ -1425,7 +1425,7 @@ export default function CheckoutPage() {
 
                         {item.size && (
                           <div className="mt-2">
-                            <span className="inline-flex rounded-lg bg-pink-50 px-2.5 py-1 text-xs font-bold text-pink-600">
+                            <span className="inline-flex rounded-lg bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
                               Size: {item.size}
                             </span>
                           </div>
@@ -1516,7 +1516,7 @@ export default function CheckoutPage() {
                 disabled={
                   placingOrder
                 }
-                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 px-5 py-3.5 font-bold text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-blue-700 px-5 py-3.5 font-bold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {placingOrder ? (
                   <>

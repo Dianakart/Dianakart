@@ -1,8 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState } from "react";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+
+import {
+  FormEvent,
+  useState,
+} from "react";
 
 import {
   ArrowLeft,
@@ -14,20 +21,51 @@ import {
 } from "lucide-react";
 
 export default function ResetPasswordForm() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+  const searchParams =
+    useSearchParams();
 
-  const token = searchParams.get("token") || "";
+  const router =
+    useRouter();
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const token =
+    searchParams.get(
+      "token"
+    ) || "";
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [
+    password,
+    setPassword,
+  ] = useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
+  const [
+    confirmPassword,
+    setConfirmPassword,
+  ] = useState("");
+
+  const [
+    showPassword,
+    setShowPassword,
+  ] = useState(false);
+
+  const [
+    showConfirmPassword,
+    setShowConfirmPassword,
+  ] = useState(false);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+  const [
+    error,
+    setError,
+  ] = useState("");
+
+  const [
+    message,
+    setMessage,
+  ] = useState("");
 
   const handleSubmit = async (
     event: FormEvent<HTMLFormElement>
@@ -38,22 +76,52 @@ export default function ResetPasswordForm() {
     setMessage("");
 
     if (!token) {
-      setError("Password reset link is invalid.");
+      setError(
+        "Password reset session is invalid. Please request a new code."
+      );
       return;
     }
 
-    if (!password || !confirmPassword) {
-      setError("Please fill in both password fields.");
+    if (
+      !password ||
+      !confirmPassword
+    ) {
+      setError(
+        "Please fill in both password fields."
+      );
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters.");
+    if (
+      password.length < 8
+    ) {
+      setError(
+        "Password must be at least 8 characters."
+      );
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
+    if (
+      !/[A-Za-z]/.test(
+        password
+      ) ||
+      !/\d/.test(
+        password
+      )
+    ) {
+      setError(
+        "Password must contain at least one letter and one number."
+      );
+      return;
+    }
+
+    if (
+      password !==
+      confirmPassword
+    ) {
+      setError(
+        "Passwords do not match."
+      );
       return;
     }
 
@@ -65,7 +133,8 @@ export default function ResetPasswordForm() {
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
           body: JSON.stringify({
             token,
@@ -75,7 +144,8 @@ export default function ResetPasswordForm() {
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         setError(
@@ -91,7 +161,9 @@ export default function ResetPasswordForm() {
       );
 
       setTimeout(() => {
-        router.push("/login");
+        router.replace(
+          "/login"
+        );
       }, 1200);
     } catch (resetError) {
       console.error(
@@ -146,19 +218,29 @@ export default function ResetPasswordForm() {
             setValue={setPassword}
             visible={showPassword}
             toggle={() =>
-              setShowPassword((value) => !value)
+              setShowPassword(
+                (value) =>
+                  !value
+              )
             }
             placeholder="Enter new password"
           />
 
           <PasswordField
             label="Confirm Password"
-            value={confirmPassword}
-            setValue={setConfirmPassword}
-            visible={showConfirmPassword}
+            value={
+              confirmPassword
+            }
+            setValue={
+              setConfirmPassword
+            }
+            visible={
+              showConfirmPassword
+            }
             toggle={() =>
               setShowConfirmPassword(
-                (value) => !value
+                (value) =>
+                  !value
               )
             }
             placeholder="Enter password again"
@@ -205,7 +287,8 @@ function PasswordField({
 }: {
   label: string;
   value: string;
-  setValue: (value: string) => void;
+  setValue:
+    (value: string) => void;
   visible: boolean;
   toggle: () => void;
   placeholder: string;
@@ -223,12 +306,19 @@ function PasswordField({
         />
 
         <input
-          type={visible ? "text" : "password"}
+          type={
+            visible
+              ? "text"
+              : "password"
+          }
           value={value}
           onChange={(event) =>
-            setValue(event.target.value)
+            setValue(
+              event.target.value
+            )
           }
           placeholder={placeholder}
+          autoComplete="new-password"
           className="h-12 w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-12 pr-12 text-sm text-gray-900 outline-none transition focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-100"
         />
 

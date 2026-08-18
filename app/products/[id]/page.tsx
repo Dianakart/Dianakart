@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   useEffect,
@@ -586,7 +586,7 @@ export default function ProductDetailsPage() {
       <main className="flex min-h-[75vh] items-center justify-center bg-gray-50 px-4">
         <div className="w-full max-w-lg rounded-3xl bg-white p-10 text-center shadow-sm">
           <div className="text-6xl">
-            📦
+            ðŸ“¦
           </div>
 
           <h1 className="mt-5 text-3xl font-bold text-gray-900">
@@ -601,7 +601,7 @@ export default function ProductDetailsPage() {
 
           <Link
             href="/products"
-            className="mt-7 inline-flex items-center gap-2 rounded-xl bg-pink-600 px-6 py-3 font-semibold text-white transition hover:bg-pink-700"
+            className="mt-7 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-6 py-3 font-semibold text-white transition hover:bg-blue-800"
           >
             <ArrowLeft
               size={19}
@@ -628,7 +628,7 @@ export default function ProductDetailsPage() {
 
           <Link
             href="/"
-            className="whitespace-nowrap transition hover:text-pink-600"
+            className="whitespace-nowrap transition hover:text-blue-700"
           >
             Home
           </Link>
@@ -640,7 +640,7 @@ export default function ProductDetailsPage() {
 
           <Link
             href="/products"
-            className="whitespace-nowrap transition hover:text-pink-600"
+            className="whitespace-nowrap transition hover:text-blue-700"
           >
             Products
           </Link>
@@ -673,13 +673,13 @@ export default function ProductDetailsPage() {
 
           <Link
             href="/cart"
-            className="ml-auto flex shrink-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 font-semibold text-gray-700 shadow-sm transition hover:border-pink-300 hover:text-pink-600"
+            className="ml-auto flex shrink-0 items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 font-semibold text-gray-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700"
           >
             <div className="relative">
               <ShoppingCart size={20} />
 
               {totalItems > 0 && (
-                <span className="absolute -right-2.5 -top-2.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-pink-600 px-1 text-[11px] font-bold text-white">
+                <span className="absolute -right-2.5 -top-2.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-700 px-1 text-[11px] font-bold text-white">
                   {totalItems}
                 </span>
               )}
@@ -744,8 +744,8 @@ export default function ProductDetailsPage() {
                         }
                         className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 bg-gray-50 transition ${
                           isSelected
-                            ? "border-pink-600 ring-2 ring-pink-100"
-                            : "border-gray-200 hover:border-pink-300"
+                            ? "border-blue-700 ring-2 ring-blue-100"
+                            : "border-gray-200 hover:border-blue-300"
                         }`}
                         aria-label={`View product image ${
                           index +
@@ -790,7 +790,7 @@ export default function ProductDetailsPage() {
 
                 {discountPercentage >
                   0 && (
-                  <span className="absolute left-4 top-4 rounded-full bg-pink-600 px-4 py-2 text-sm font-bold text-white shadow">
+                  <span className="absolute left-4 top-4 rounded-full bg-blue-700 px-4 py-2 text-sm font-bold text-white shadow">
                     {
                       discountPercentage
                     }
@@ -812,7 +812,7 @@ export default function ProductDetailsPage() {
               <div className="mt-5 rounded-2xl border border-gray-100 bg-gray-50/70 p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-pink-600">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-blue-700">
                       Similar Products
                     </p>
 
@@ -823,7 +823,7 @@ export default function ProductDetailsPage() {
 
                   <Sparkles
                     size={18}
-                    className="shrink-0 text-pink-600"
+                    className="shrink-0 text-blue-700"
                   />
                 </div>
 
@@ -863,7 +863,7 @@ export default function ProductDetailsPage() {
                           <Link
                             key={item._id}
                             href={`/products/${item._id}`}
-                            className="group w-[105px] shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-pink-300 hover:shadow-sm"
+                            className="group w-[105px] shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-white transition hover:border-blue-300 hover:shadow-sm"
                           >
                             <div className="relative aspect-[2/3] overflow-hidden bg-gray-50">
                               <Image
@@ -921,7 +921,7 @@ export default function ProductDetailsPage() {
             {/* BRAND */}
 
             {product.brand && (
-              <p className="text-xs font-bold uppercase tracking-[0.16em] text-pink-600">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-blue-700">
                 {
                   product.brand
                 }
@@ -996,7 +996,7 @@ export default function ProductDetailsPage() {
                   </p>
 
                   {selectedSize && (
-                    <span className="text-sm font-semibold text-pink-600">
+                    <span className="text-sm font-semibold text-blue-700">
                       Selected: {selectedSize}
                     </span>
                   )}
@@ -1027,8 +1027,8 @@ export default function ProductDetailsPage() {
                           }}
                           className={`min-w-12 rounded-lg border-2 px-3 py-2 text-sm font-bold transition ${
                             selected
-                              ? "border-pink-600 bg-pink-600 text-white"
-                              : "border-gray-300 bg-white text-gray-800 hover:border-pink-400 hover:text-pink-600"
+                              ? "border-blue-700 bg-blue-700 text-white"
+                              : "border-gray-300 bg-white text-gray-800 hover:border-blue-400 hover:text-blue-700"
                           }`}
                         >
                           {size}
@@ -1106,7 +1106,7 @@ export default function ProductDetailsPage() {
               {addedToCart ? (
                 <Link
                   href="/cart"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-pink-600 bg-pink-50 px-4 text-sm font-bold text-pink-600 transition hover:bg-pink-100"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-blue-700 bg-blue-50 px-4 text-sm font-bold text-blue-700 transition hover:bg-blue-100"
                 >
                   <ShoppingCart
                     size={21}
@@ -1125,7 +1125,7 @@ export default function ProductDetailsPage() {
                   disabled={
                     addingToCart
                   }
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-pink-600 px-4 text-sm font-bold text-pink-600 transition hover:bg-pink-50 disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400"
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 border-blue-700 px-4 text-sm font-bold text-blue-700 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:border-gray-300 disabled:text-gray-400"
                 >
                   <ShoppingCart
                     size={21}
@@ -1147,7 +1147,7 @@ export default function ProductDetailsPage() {
                 disabled={
                   addingToCart
                 }
-                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-pink-600 px-4 text-sm font-bold text-white transition hover:bg-pink-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-blue-700 px-4 text-sm font-bold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-gray-300"
               >
                 <ShoppingBag
                   size={21}
@@ -1207,7 +1207,7 @@ export default function ProductDetailsPage() {
             Description
           </h2>
 
-          <div className="mt-5 h-1 w-16 rounded-full bg-pink-600" />
+          <div className="mt-5 h-1 w-16 rounded-full bg-blue-700" />
 
           <div
             className={`relative mt-6 overflow-hidden transition-all duration-300 ${
@@ -1236,7 +1236,7 @@ export default function ProductDetailsPage() {
                     (previous) => !previous
                   )
                 }
-                className="mt-4 inline-flex items-center rounded-lg border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-bold text-pink-600 transition hover:bg-pink-100 hover:text-pink-700"
+                className="mt-4 inline-flex items-center rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100 hover:text-blue-800"
               >
                 {showFullDescription
                   ? "See Less"
@@ -1392,7 +1392,7 @@ function FeatureRow({
 }) {
   return (
     <div className="flex items-start gap-3 rounded-xl border border-gray-200 p-3.5">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-pink-50 text-pink-600">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700">
         {icon}
       </div>
 
