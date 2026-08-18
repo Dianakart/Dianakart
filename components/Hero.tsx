@@ -6,7 +6,11 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 interface Banner {
   _id: string;
@@ -27,10 +31,18 @@ interface BannersApiResponse {
   error?: string;
 }
 
+const AUTO_SLIDE_TIME = 4000;
+const MAX_BANNERS = 4;
+
 export default function Hero() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isTransitioning, setIsTransitioning] =
+    useState(true);
+
+  const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     const fetchBanners = async () => {
@@ -55,11 +67,17 @@ export default function Hero() {
           );
         }
 
-        setBanners(
-          Array.isArray(data.banners)
-            ? data.banners
-            : []
-        );
+        const bannerList = Array.isArray(data.banners)
+          ? data.banners
+              .filter((banner) => banner.isActive)
+              .sort(
+                (a, b) =>
+                  a.displayOrder - b.displayOrder
+              )
+              .slice(0, MAX_BANNERS)
+          : [];
+
+        setBanners(bannerList);
       } catch (error) {
         console.error(
           "Hero banner load error:",
@@ -76,55 +94,89 @@ export default function Hero() {
   }, []);
 
   useEffect(() => {
-    if (banners.length <= 1) {
+    if (
+      banners.length <= 1 ||
+      isPaused
+    ) {
       return;
     }
 
     const interval = window.setInterval(() => {
+      setIsTransitioning(true);
       setCurrentIndex((previousIndex) =>
-        previousIndex === banners.length - 1
-          ? 0
-          : previousIndex + 1
+        previousIndex + 1
       );
-    }, 5000);
+    }, AUTO_SLIDE_TIME);
 
     return () => {
       window.clearInterval(interval);
     };
-  }, [banners.length]);
+  }, [banners.length, isPaused]);
 
   useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleTransitionEnd = () => {
     if (
-      banners.length > 0 &&
-      currentIndex >= banners.length
+      currentIndex === banners.length
     ) {
+      setIsTransitioning(false);
       setCurrentIndex(0);
+
+      timeoutRef.current = window.setTimeout(() => {
+        setIsTransitioning(true);
+      }, 50);
     }
-  }, [banners.length, currentIndex]);
+  };
 
   const goToPrevious = () => {
+    if (banners.length <= 1) {
+      return;
+    }
+
+    if (currentIndex === 0) {
+      setIsTransitioning(false);
+      setCurrentIndex(banners.length);
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsTransitioning(true);
+          setCurrentIndex(banners.length - 1);
+        });
+      });
+
+      return;
+    }
+
+    setIsTransitioning(true);
     setCurrentIndex((previousIndex) =>
-      previousIndex === 0
-        ? banners.length - 1
-        : previousIndex - 1
+      previousIndex - 1
     );
   };
 
   const goToNext = () => {
+    if (banners.length <= 1) {
+      return;
+    }
+
+    setIsTransitioning(true);
     setCurrentIndex((previousIndex) =>
-      previousIndex === banners.length - 1
-        ? 0
-        : previousIndex + 1
+      previousIndex + 1
     );
   };
 
   if (loading) {
     return (
-      <section className="flex min-h-[300px] items-center justify-center bg-gray-100 md:min-h-[420px]">
+      <section className="flex min-h-[250px] items-center justify-center bg-white">
         <div className="text-center">
           <Loader2
             size={38}
-            className="mx-auto animate-spin text-pink-600"
+            className="mx-auto animate-spin text-blue-700"
           />
 
           <p className="mt-3 text-sm font-medium text-gray-500">
@@ -137,99 +189,140 @@ export default function Hero() {
 
   if (banners.length === 0) {
     return (
-      <section className="bg-gradient-to-r from-pink-50 via-white to-purple-50">
+      <section className="bg-gradient-to-r from-blue-50 via-white to-slate-50">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-6 py-14 md:grid-cols-2">
           <div>
-            <h1 className="text-4xl font-bold leading-tight text-gray-900 md:text-6xl">
-              Find Your
-              <span className="text-pink-600">
-                {" "}
+            <h1 className="text-4xl font-bold text-gray-900 md:text-6xl">
+              Find Your{" "}
+              <span className="text-blue-700">
                 Perfect Style
               </span>
             </h1>
 
-            <p className="mt-5 max-w-lg text-lg text-gray-600">
-              Explore the latest collection of fashion,
-              handbags, footwear, jewellery and beauty
-              products—all in one place.
+            <p className="mt-5 text-lg text-gray-600">
+              Explore fashion, footwear,
+              handbags and jewellery.
             </p>
 
             <Link
               href="/products"
-              className="mt-8 inline-flex rounded-xl bg-pink-600 px-8 py-3 font-semibold text-white transition hover:bg-pink-700"
+              className="mt-8 inline-flex rounded-xl bg-blue-700 px-8 py-3 font-semibold text-white hover:bg-blue-800"
             >
               Shop Now
             </Link>
-          </div>
-
-          <div className="flex justify-center">
-            <img
-              src="/banner-girl.png"
-              alt="Fashion Banner"
-              className="w-full max-w-md rounded-3xl"
-            />
           </div>
         </div>
       </section>
     );
   }
 
-  const currentBanner = banners[currentIndex];
+  const sliderBanners =
+    banners.length > 1
+      ? [...banners, banners[0]]
+      : banners;
+
+  const visibleDotIndex =
+    currentIndex === banners.length
+      ? 0
+      : currentIndex;
 
   return (
-    <section className="relative w-full overflow-hidden bg-gray-100">
-      <div className="relative w-full">
-        <picture>
-          {currentBanner.mobileImage && (
-            <source
-              media="(max-width: 767px)"
-              srcSet={currentBanner.mobileImage}
-            />
-          )}
+    <section
+      className="relative w-full overflow-hidden bg-white"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      <div className="relative mx-auto w-full max-w-[1600px] overflow-hidden">
 
-          <img
-            key={currentBanner._id}
-            src={currentBanner.desktopImage}
-            alt={
-              currentBanner.title ||
-              "DianaKart promotional banner"
-            }
-            className="w-full h-[260px] sm:h-[320px] md:h-[400px] lg:h-[470px] object-contain bg-white"
-          />
-        </picture>
+        <div
+          onTransitionEnd={handleTransitionEnd}
+          className={`flex ${
+            isTransitioning
+              ? "transition-transform duration-700 ease-in-out"
+              : ""
+          }`}
+          style={{
+            transform: `translateX(-${
+              currentIndex * 100
+            }%)`,
+          }}
+        >
+          {sliderBanners.map((banner, index) => {
+            const imageContent = (
+              <picture>
+                {banner.mobileImage && (
+                  <source
+                    media="(max-width: 767px)"
+                    srcSet={banner.mobileImage}
+                  />
+                )}
 
-       
+                <img
+                  src={banner.desktopImage}
+                  alt={
+                    banner.title ||
+                    "DianaKart promotional banner"
+                  }
+                  className="block w-full object-contain"
+                  draggable={false}
+                />
+              </picture>
+            );
+
+            return (
+              <div
+                key={`${banner._id}-${index}`}
+                className="w-full min-w-full shrink-0"
+              >
+                {banner.buttonLink ? (
+                  <Link
+                    href={banner.buttonLink}
+                    className="block w-full"
+                  >
+                    {imageContent}
+                  </Link>
+                ) : (
+                  imageContent
+                )}
+              </div>
+            );
+          })}
+        </div>
+
         {banners.length > 1 && (
           <>
             <button
               type="button"
               onClick={goToPrevious}
               aria-label="Previous banner"
-              className="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white shadow-lg transition hover:bg-black/60 md:left-6 md:h-12 md:w-12"
+              className="absolute left-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/60 md:left-5 md:h-12 md:w-12"
             >
-              <ChevronLeft size={26} />
+              <ChevronLeft size={28} />
             </button>
 
             <button
               type="button"
               onClick={goToNext}
               aria-label="Next banner"
-              className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white shadow-lg transition hover:bg-black/60 md:right-6 md:h-12 md:w-12"
+              className="absolute right-3 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/35 text-white shadow-lg transition hover:bg-black/60 md:right-5 md:h-12 md:w-12"
             >
-              <ChevronRight size={26} />
+              <ChevronRight size={28} />
             </button>
 
-            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/30 px-3 py-2 backdrop-blur-sm">
+            <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-black/25 px-3 py-2 backdrop-blur-sm">
               {banners.map((banner, index) => (
                 <button
                   key={banner._id}
                   type="button"
-                  onClick={() =>
-                    setCurrentIndex(index)
-                  }
-                  aria-label={`Show banner ${index + 1}`}
-                  className={`h-2.5 rounded-full transition-all ${
-                    currentIndex === index
+                  onClick={() => {
+                    setIsTransitioning(true);
+                    setCurrentIndex(index);
+                  }}
+                  aria-label={`Show banner ${
+                    index + 1
+                  }`}
+                  className={`h-2.5 rounded-full transition-all duration-300 ${
+                    visibleDotIndex === index
                       ? "w-7 bg-white"
                       : "w-2.5 bg-white/60 hover:bg-white"
                   }`}
